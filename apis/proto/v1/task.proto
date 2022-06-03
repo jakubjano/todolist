@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package task;
+
+service TaskService {
+
+}
+
+message Create {
+  string TaskID = 1;
+  int64 CreatedAt = 2;
+  string Name = 3;
+  string Description = 4;
+  int64 Time = 5;
+  string UserID = 6;
+}
+
+message Update {
+  string NewName = 1;
+  string NewDescription = 2;
+  int64 NewTime = 3;
+}
+
+message Delete {
+  string TaskID = 1;
+}

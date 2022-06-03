@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package user;
+option go_package = ".;v1";
+import "google/api/annotations.proto";
+
+// The greeting service definition.
+service UserService {
+
+  rpc UpdateUser(User) returns (User) {
+    option (google.api.http) = {
+      post: "/user"
+      body: "*"
+    };
+
+  }
+  rpc GetUser(GetUserRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/user"
+    };
+  }
+  // User Service
+
+}
+
+// The request message containing the user's name.
+//message Create {
+//  string FirstName = 1;
+//  string LastName = 2;
+//  string Email = 3;
+//}
+
+message GetUserRequest {
+  string UserID = 1;
+}
+
+// Update user's information
+
+message User {
+  string LastName = 1;
+  string FirstName = 2;
+  string Phone = 3;
+  string Address = 4;
+}
+
+
+
+// Delete users
+
+//message Delete {
+//
+//}
+
