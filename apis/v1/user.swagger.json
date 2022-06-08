@@ -119,6 +119,12 @@
         },
         "Address": {
           "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "UserID": {
+          "type": "string"
         }
       }
     }

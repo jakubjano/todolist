@@ -4,7 +4,7 @@ package user;
 option go_package = ".;v1";
 import "google/api/annotations.proto";
 
-// The greeting service definition.
+// The User service definition.
 service UserService {
 
   rpc UpdateUser(User) returns (User) {
@@ -19,7 +19,13 @@ service UserService {
       get: "/user"
     };
   }
-  // User Service
+
+//  rpc CreateUser(User) returns (User) {
+//    option(google.api.http) = {
+//      post: "/user/new"
+//      body: "*"
+//    };
+//  }
 
 }
 
@@ -31,19 +37,19 @@ service UserService {
 //}
 
 message GetUserRequest {
-  string UserID = 1;
+  string userID = 1;
 }
 
 // Update user's information
 
 message User {
-  string LastName = 1;
-  string FirstName = 2;
-  string Phone = 3;
-  string Address = 4;
+  string lastName = 1;
+  string firstName = 2;
+  string phone = 3;
+  string address = 4;
+  string email = 5;
+  string userID = 6;
 }
-
-
 
 // Delete users
 

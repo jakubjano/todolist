@@ -7,7 +7,7 @@ replace github.com/jakubjano/todolist/apis/go-sdk => ./apis/go-sdk
 require (
 	cloud.google.com/go/firestore v1.6.1
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.3
 	github.com/jakubjano/todolist/apis/go-sdk v0.0.0-00010101000000-000000000000
 	google.golang.org/api v0.59.0

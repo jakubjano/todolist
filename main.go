@@ -4,32 +4,26 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	service2 "jakubjano/todolist/user/pkg/service"
+	"jakubjano/todolist/user/pkg/service"
 	"jakubjano/todolist/user/pkg/service/repository"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
-	"strings"
 )
 
 func main() {
-
+	address := ":8081"
 	// Use the application default credentials
 	ctx := context.Background()
 	key := option.WithCredentialsFile("todolist-dd92e-firebase-adminsdk-9ase9-a45f00f8a4.json")
 
-	lis, err := net.Listen("tcp", ":8081")
-	if err != nil {
-		panic(err)
-	}
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
 		panic(err)
@@ -41,42 +35,57 @@ func main() {
 	}
 	defer client.Close()
 
-	userRepo := repository.NewFSUser(client)
-	service := service2.NewUserService(userRepo)
-
-	grpcServer := grpc.NewServer()
-	v1.RegisterUserServiceServer(grpcServer, service)
-	reflection.Register(grpcServer)
-	mux := runtime.NewServeMux()
-	err = v1.RegisterUserServiceHandlerServer(ctx, mux, service)
+	authClient, err := app.Auth(ctx)
 	if err != nil {
 		panic(err)
 	}
-	srv := &http.Server{
-		Addr:    "8081",
-		Handler: grpcHandlerFunc(grpcServer),
+
+	userRepo := repository.NewFSUser(client.Collection("users"))
+	userService := service.NewUserService(authClient, userRepo)
+
+	lis, err := net.Listen("tcp", address)
+	if err != nil {
+		panic(err)
 	}
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	s := grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_recovery.UnaryServerInterceptor(),
+		),
+	)
+	v1.RegisterUserServiceServer(s, userService)
+	reflection.Register(s)
+
 	go func() {
-		<-c
-		fmt.Println("Shutting down server")
-		grpcServer.GracefulStop()
-		_ = srv.Close()
+		err = s.Serve(lis)
+		if err != nil {
+			panic(err)
+		}
 	}()
 
-	err = srv.Serve(lis)
+	conn, err := grpc.DialContext(
+		context.Background(),
+		address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	)
 	if err != nil {
 		panic(err)
 	}
 
-}
+	// Register gRPC server endpoint
+	// Note: Make sure the gRPC server is running properly and accessible
+	mux := runtime.NewServeMux()
+	err = v1.RegisterUserServiceHandler(context.Background(), mux, conn)
+	if err != nil {
+		panic(err)
+	}
 
-func grpcHandlerFunc(grpcServer *grpc.Server) http.Handler {
-	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			grpcServer.ServeHTTP(w, r)
-		}
-	}), &http2.Server{})
+	// Start HTTP server (and proxy calls to gRPC server endpoint)
+	fmt.Printf("starting http server at '%s'\n", ":8080")
+
+	err = http.ListenAndServe(":8080", mux)
+	if err != nil {
+		panic(err)
+	}
 }

@@ -1,5 +1,7 @@
 package repository
 
+import v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
+
 type User struct {
 	UserID    string `firestore:"UserID"`
 	Email     string `firestore:"Email"`
@@ -7,4 +9,27 @@ type User struct {
 	LastName  string `firestore:"LastName"`
 	Phone     string `firestore:"Phone"`
 	Address   string `firestore:"Address"`
+}
+
+func (u User) ToApi() *v1.User {
+	return &v1.User{
+		LastName:  u.LastName,
+		FirstName: u.FirstName,
+		Phone:     u.Phone,
+		Address:   u.Address,
+		Email:     u.Email,
+		UserID:    u.UserID,
+	}
+
+}
+func UserFromMsg(msg *v1.User) User {
+
+	return User{
+		UserID:    msg.UserID,
+		Email:     msg.Email,
+		FirstName: msg.FirstName,
+		LastName:  msg.LastName,
+		Phone:     msg.Phone,
+		Address:   msg.Address,
+	}
 }
