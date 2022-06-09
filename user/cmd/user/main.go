@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"jakubjano/todolist/user/internal/auth"
 	"jakubjano/todolist/user/pkg/service"
 	"jakubjano/todolist/user/pkg/service/repository"
 	"net"
@@ -23,6 +24,7 @@ func main() {
 	// Use the application default credentials
 	ctx := context.Background()
 	key := option.WithCredentialsFile("secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
+	//config := firebase.Config{ProjectID: "todolist-dd92e"}
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
@@ -42,6 +44,7 @@ func main() {
 
 	userRepo := repository.NewFSUser(client.Collection("users"))
 	userService := service.NewUserService(authClient, userRepo)
+	tokenClient := auth.NewTokenClient(authClient)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
@@ -51,6 +54,7 @@ func main() {
 	s := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_recovery.UnaryServerInterceptor(),
+			tokenClient.CustomUnaryInterceptor(),
 		),
 	)
 	v1.RegisterUserServiceServer(s, userService)
@@ -88,4 +92,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 }
