@@ -35,6 +35,11 @@ func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, er
 		fmt.Println("error updating user on the database layer")
 		return &v1.User{}, err
 	}
+
+	fmt.Println("context from the UserSevice Update method\n")
+	fmt.Println(ctx.Value("user"))
+	// need to be mapped to the userCtx type?
+
 	return user.ToApi(), nil
 }
 

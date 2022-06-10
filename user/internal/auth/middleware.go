@@ -28,6 +28,12 @@ func NewTokenClient(authClient *auth.Client) *TokenClient {
 
 //type AF func(ctx context.Context) (context.Context, error)
 
+type userContext struct {
+	userID string
+	email  string
+	role   string
+}
+
 // UnaryServerInterceptor returns a new unary server interceptors that performs per-request auth.
 func (t *TokenClient) CustomUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -59,13 +65,27 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 		fmt.Printf("error verifying ID token: %v\n\n", err)
 		return nil, err
 	}
-	fmt.Printf("Verified ID token: %v\n", token)
+	//fmt.Printf("Verified ID token: %v\n", token)
 
+	data := token.Claims
+	//fmt.Printf("data from token.Firebase.Identities%v", data)
+
+	ctxUser := &userContext{
+		userID: data["user_id"].(string),
+		email:  data["email"].(string),
+		role:   "",
+	}
+
+	newCtx := context.WithValue(ctx, "user", *ctxUser)
+	fmt.Println(newCtx.Value("user"))
+	fmt.Println(newCtx.Value("user").(userContext).userID)
+
+	//TODO
 	// parse user email,id from token
 	// new type userContext: userid, email, role
 	// token.firebase...
 	// create new context with parameters from token
 	// context.WithValue()
 
-	return ctx, nil
+	return newCtx, nil
 }
