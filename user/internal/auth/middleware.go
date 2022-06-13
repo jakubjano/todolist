@@ -28,10 +28,10 @@ func NewTokenClient(authClient *auth.Client) *TokenClient {
 
 //type AF func(ctx context.Context) (context.Context, error)
 
-type userContext struct {
-	userID string
-	email  string
-	role   string
+type UserContext struct {
+	UserID string
+	Email  string
+	Role   string
 }
 
 // UnaryServerInterceptor returns a new unary server interceptors that performs per-request auth.
@@ -47,7 +47,6 @@ func (t *TokenClient) CustomUnaryInterceptor() grpc.UnaryServerInterceptor {
 }
 
 func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
-	fmt.Println("WE ARE IN")
 	//get token form post request's header
 	// verify token
 	// parse email
@@ -68,17 +67,16 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 	//fmt.Printf("Verified ID token: %v\n", token)
 
 	data := token.Claims
-	//fmt.Printf("data from token.Firebase.Identities%v", data)
+	//fmt.Printf("data from token.Claims: %v", data)
 
-	ctxUser := &userContext{
-		userID: data["user_id"].(string),
-		email:  data["email"].(string),
-		role:   "",
+	ctxUser := &UserContext{
+		UserID: data["user_id"].(string),
+		Email:  data["email"].(string),
+		Role:   data["role"].(string),
 	}
 
-	newCtx := context.WithValue(ctx, "user", *ctxUser)
-	fmt.Println(newCtx.Value("user"))
-	fmt.Println(newCtx.Value("user").(userContext).userID)
+	newCtx := context.WithValue(ctx, "user", ctxUser)
+	//fmt.Println(newCtx.Value("user"))
 
 	//TODO
 	// parse user email,id from token
@@ -88,4 +86,26 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 	// context.WithValue()
 
 	return newCtx, nil
+}
+
+func (t *TokenClient) VerifyUserRole(ctx context.Context) error {
+	// to be called in auth function for certain methods on UserService
+	// e.g. delete firebase user needs to be authorized by an admin
+	userID := ctx.Value("user").(UserContext).UserID
+	fmt.Printf("user ID from context :%s\n", userID)
+	user, err := t.authClient.GetUser(ctx, userID)
+	fmt.Printf("user from authclient:%v\n", user)
+	if err != nil {
+		fmt.Printf("Error getting user")
+		return err
+	}
+
+	//// map custom claims to userContext type ?
+	//if admin, ok := user.CustomClaims["admin"]; ok {
+	//	if admin.(bool) {
+	//		return nil
+	//	}
+	//	err = errors.New("unauthorized request")
+	//}
+	return err
 }

@@ -5,8 +5,12 @@ import (
 	"firebase.google.com/go/auth"
 	"fmt"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
+	middleware "jakubjano/todolist/user/internal/auth"
 	"jakubjano/todolist/user/pkg/service/repository"
 	"log"
+	"net/http"
 )
 
 type UserService struct {
@@ -23,66 +27,57 @@ func NewUserService(authClient *auth.Client, userRepo repository.FSUserInterface
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, error) {
-	// check the user in firebase auth
-	// if user does not exist in firebase auth return error
-	_, err := s.authClient.GetUserByEmail(ctx, in.Email)
-	if err != nil {
-		return &v1.User{}, err
+	userCtx := ctx.Value("user").(*middleware.UserContext)
+	switch userCtx.Role {
+	case "admin":
+		log.Printf("Admin %s authorized\n", userCtx.Email)
+	case "user":
+		if userCtx.Email != in.Email {
+			return &v1.User{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
+		}
 	}
-	fmt.Println("User found")
-	user, err := s.userRepo.Update(ctx, repository.UserFromMsg(in))
+	fbUser, err := s.authClient.GetUserByEmail(ctx, in.Email)
 	if err != nil {
-		fmt.Println("error updating user on the database layer")
-		return &v1.User{}, err
+		return &v1.User{}, status.Error(http.StatusBadRequest, err.Error())
 	}
-
-	fmt.Println("context from the UserSevice Update method\n")
-	fmt.Println(ctx.Value("user"))
-	// need to be mapped to the userCtx type?
-
+	user, err := s.userRepo.Update(ctx, fbUser.UID, repository.UserFromMsg(in))
+	if err != nil {
+		return &v1.User{}, status.Error(http.StatusInternalServerError, err.Error())
+	}
 	return user.ToApi(), nil
 }
 
 func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.User, error) {
+	userCtx := ctx.Value("user").(*middleware.UserContext)
+	switch userCtx.Role {
+	case "admin":
+		fmt.Println("Admin authorized")
+	case "user":
+		if userCtx.UserID != in.UserID {
+			return &v1.User{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
+		}
+	}
 	user, err := s.userRepo.Get(ctx, in.UserID)
 	if err != nil {
-		log.Printf("error getting user with id:%s", in.UserID)
-		return &v1.User{}, err
+		return &v1.User{}, status.Error(http.StatusBadRequest, err.Error())
 	}
 	return user.ToApi(), nil
 }
 
-// no deletion of users on endpoints ?
-
-//func (s *UserService) DeleteUser(ctx context.Context, in *v1.GetUserRequest) error {
-//	err := s.authClient.DeleteUser(ctx, in.UserID)
-//	if err != nil {
-//		log.Printf("error deleting user: %v\n", err)
-//		return err
-//	}
-//	log.Printf("Successfully deleted user: %s\n", in.UserID)
-//	err = s.userRepo.Delete(ctx, in.UserID)
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
-
-// No creation of new FB users on endpoints?
-
-//func (s *UserService) CreateUser(ctx context.Context, in *v1.User) (*v1.User, error) {
-//
-//	params := (&auth.UserToCreate{}).
-//		Email(in.Email).
-//		PhoneNumber(in.Phone).
-//		DisplayName(in.FirstName + " " + in.LastName)
-//	u, err := s.authClient.CreateUser(ctx, params)
-//	if err != nil {
-//		log.Fatalf("error creating user: %v\n", err)
-//	}
-//	log.Printf("Successfully created user: %v\n", u)
-//
-//	//TODO create user in FS db
-//
-//	return &v1.User{}, nil
-//}
+func (s *UserService) DeleteUser(ctx context.Context, in *v1.DeleteUserRequest) (*emptypb.Empty, error) {
+	userCtx := ctx.Value("user").(*middleware.UserContext)
+	if userCtx.Role != "admin" {
+		return &emptypb.Empty{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
+	}
+	err := s.authClient.DeleteUser(ctx, in.UserID)
+	if err != nil {
+		log.Printf("error deleting user: %v\n", err)
+		return &emptypb.Empty{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	log.Printf("Successfully deleted user: %s\n", in.UserID)
+	err = s.userRepo.Delete(ctx, in.UserID)
+	if err != nil {
+		return &emptypb.Empty{}, status.Error(http.StatusInternalServerError, err.Error())
+	}
+	return &emptypb.Empty{}, nil
+}

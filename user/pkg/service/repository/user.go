@@ -8,7 +8,7 @@ import (
 
 type FSUserInterface interface {
 	Get(ctx context.Context, UserID string) (User, error)
-	Update(ctx context.Context, user User) (User, error)
+	Update(ctx context.Context, userID string, user User) (User, error)
 	Delete(ctx context.Context, UserID string) error
 }
 
@@ -23,24 +23,21 @@ func NewFSUser(fs *firestore.CollectionRef) *FSUser {
 }
 
 func (a *FSUser) Get(ctx context.Context, UserID string) (User, error) {
-	user := User{}
 	doc, err := a.fs.Doc(UserID).Get(ctx)
 	if err != nil {
 		return User{}, err
 	}
+	user := User{}
 	err = doc.DataTo(&user)
 	if err != nil {
 		return User{}, err
 	}
-
 	return user, nil
 }
 
-func (a *FSUser) Update(ctx context.Context, user User) (User, error) {
-
-	_, err := a.fs.Doc(user.UserID).Set(ctx, user)
+func (a *FSUser) Update(ctx context.Context, userID string, user User) (User, error) {
+	_, err := a.fs.Doc(userID).Set(ctx, user)
 	if err != nil {
-		log.Printf("Error updating user with id(%s) on the database layer", user.UserID)
 		return User{}, err
 	}
 	return user, nil
@@ -54,8 +51,3 @@ func (a *FSUser) Delete(ctx context.Context, UserID string) error {
 	}
 	return nil
 }
-
-//func (a *FSUser) Create(ctx context.Context, user User) (User, error) {
-//
-//	return User{}, nil
-//}

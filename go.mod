@@ -12,6 +12,7 @@ require (
 	github.com/jakubjano/todolist/apis/go-sdk v0.0.0-00010101000000-000000000000
 	google.golang.org/api v0.59.0
 	google.golang.org/grpc v1.47.0
+	google.golang.org/protobuf v1.28.0
 )
 
 require (
@@ -21,7 +22,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
-	github.com/muesli/cache2go v0.0.0-20211005105910-8e46465cca4a // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
@@ -30,5 +30,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220602131408-e326c6e8e9c8 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/grpc/examples v0.0.0-20220608152536-584d9cd11a1d // indirect
 )

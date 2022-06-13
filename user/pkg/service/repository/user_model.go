@@ -23,7 +23,6 @@ func (u User) ToApi() *v1.User {
 
 }
 func UserFromMsg(msg *v1.User) User {
-
 	return User{
 		UserID:    msg.UserID,
 		Email:     msg.Email,

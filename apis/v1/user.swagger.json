@@ -35,7 +35,36 @@
         },
         "parameters": [
           {
-            "name": "UserID",
+            "name": "userID",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "delete": {
+        "operationId": "UserService_DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -108,22 +137,22 @@
     "userUser": {
       "type": "object",
       "properties": {
-        "LastName": {
+        "lastName": {
           "type": "string"
         },
-        "FirstName": {
+        "firstName": {
           "type": "string"
         },
-        "Phone": {
+        "phone": {
           "type": "string"
         },
-        "Address": {
+        "address": {
           "type": "string"
         },
-        "Email": {
+        "email": {
           "type": "string"
         },
-        "UserID": {
+        "userID": {
           "type": "string"
         }
       }
