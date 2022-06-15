@@ -6,6 +6,9 @@ import (
 	"log"
 )
 
+//TODO test on emulated FS dtb
+// dockerize emulator via docker-compose.yml
+
 type FSUserInterface interface {
 	Get(ctx context.Context, UserID string) (User, error)
 	Update(ctx context.Context, userID string, user User) (User, error)
