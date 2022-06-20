@@ -26,6 +26,7 @@ Simple microservice architecture project.
 * Logs have been an essential part of troubleshooting application
 * Add logs to critical parts of your application (https://github.com/uber-go/zap)
 * Consider adding some information logs.
+* log with custom fields 
 
 ## Deployment
 * Write terraform to manage cloud services (https://www.terraform.io/)

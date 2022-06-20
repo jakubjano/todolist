@@ -86,7 +86,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 	}
 
 	for _, user := range users {
-		docRef := s.client.Collection("User").Doc(user.UserID)
+		docRef := s.client.Collection("User").Doc(user.UserID) //todo naming convention -> collections with lowercase plural
 		batchCreate.Set(docRef, user)
 	}
 	_, err := batchCreate.Commit(ctx)
@@ -105,12 +105,12 @@ func (s *RepoUserTestSuite) TearDownTest() {
 	_, err = batch.Commit(ctx)
 	s.NoError(err)
 
+	//todo check cli command for collection deletion
 }
 
 func (s *RepoUserTestSuite) TearDownSuite() {
 	err := s.client.Close()
 	s.NoError(err)
-
 }
 
 func (s *RepoUserTestSuite) TestGetUser() {
@@ -209,6 +209,11 @@ func (s *RepoUserTestSuite) TestUpdateUser() {
 		user, err := s.userRepo.Update(ctx, candidate.UserID, candidate.ExpectedResult)
 		s.Equal(candidate.ExpectedResult, user)
 		s.Equal(candidate.ExpectedError, err)
+		//Todo get user and check if updated correctly
+		// Get(user) == ExpectedResult
+		userGet, err := s.userRepo.Get(ctx, candidate.UserID)
+		s.NoError(err)
+		s.Equal(candidate.ExpectedResult, userGet)
 	}
 }
 
@@ -230,6 +235,12 @@ func (s *RepoUserTestSuite) TestDeleteUser() {
 	for _, candidate := range candidates {
 		err := s.userRepo.Delete(ctx, candidate.UserID)
 		s.Equal(candidate.ExpectedError, err)
+		_, err = s.userRepo.Get(ctx, candidate.UserID)
+		s.Equal(codes.NotFound, status.Code(err))
+
+		//todo check if document is deleted
+		// get user via client
+
 	}
 }
 

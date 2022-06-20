@@ -13,13 +13,18 @@ import (
 	"net/http"
 )
 
+type AuthClientInterface interface {
+	GetUserByEmail(ctx context.Context, email string) (*auth.UserRecord, error)
+	DeleteUser(ctx context.Context, uid string) error
+}
+
 type UserService struct {
 	v1.UnimplementedUserServiceServer // from proto, must be present
-	authClient                        *auth.Client
+	authClient                        AuthClientInterface
 	userRepo                          repository.FSUserInterface
 }
 
-func NewUserService(authClient *auth.Client, userRepo repository.FSUserInterface) *UserService {
+func NewUserService(authClient AuthClientInterface, userRepo repository.FSUserInterface) *UserService {
 	return &UserService{
 		authClient: authClient,
 		userRepo:   userRepo,
@@ -38,7 +43,7 @@ func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, er
 	}
 	fbUser, err := s.authClient.GetUserByEmail(ctx, in.Email)
 	if err != nil {
-		return &v1.User{}, status.Error(http.StatusBadRequest, err.Error())
+		return &v1.User{}, err //status.Error(http.StatusBadRequest, err.Error())
 	}
 	user, err := s.userRepo.Update(ctx, fbUser.UID, repository.UserFromMsg(in))
 	if err != nil {
@@ -57,6 +62,7 @@ func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.U
 			return &v1.User{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
 		}
 	}
+	fmt.Println(ctx.Value("user"))
 	user, err := s.userRepo.Get(ctx, in.UserID)
 	if err != nil {
 		return &v1.User{}, status.Error(http.StatusBadRequest, err.Error())
