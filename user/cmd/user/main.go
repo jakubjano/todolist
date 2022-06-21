@@ -20,35 +20,44 @@ import (
 )
 
 func main() {
+	//todo viper config
+	// defaults + config file from env
+
 	address := ":8081"
 	// Use the application default credentials
 	ctx := context.Background()
 	key := option.WithCredentialsFile("secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
 	//config := firebase.Config{ProjectID: "todolist-dd92e"}
 
+	logger, err := service.NewLogger()
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	defer logger.Sync()
+
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 	client, err := app.Firestore(ctx)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 	defer client.Close()
 
 	authClient, err := app.Auth(ctx)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 	userRepo := repository.NewFSUser(client.Collection("users"))
-	userService := service.NewUserService(authClient, userRepo)
-	tokenClient := auth.NewTokenClient(authClient)
+	userService := service.NewUserService(authClient, userRepo, logger)
+	tokenClient := auth.NewTokenClient(authClient, logger)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 	s := grpc.NewServer(
@@ -63,7 +72,7 @@ func main() {
 	go func() {
 		err = s.Serve(lis)
 		if err != nil {
-			panic(err)
+			logger.Fatal(err.Error())
 		}
 	}()
 
@@ -74,7 +83,7 @@ func main() {
 		grpc.WithBlock(),
 	)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 	// Register gRPC server endpoint
@@ -82,7 +91,7 @@ func main() {
 	mux := runtime.NewServeMux()
 	err = v1.RegisterUserServiceHandler(context.Background(), mux, conn)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
@@ -90,7 +99,7 @@ func main() {
 
 	err = http.ListenAndServe(":8080", mux)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 }

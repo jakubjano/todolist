@@ -5,6 +5,7 @@ import (
 	"firebase.google.com/go/auth"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
 	middleware "jakubjano/todolist/user/internal/auth"
 	"jakubjano/todolist/user/pkg/service/repository"
@@ -22,7 +23,8 @@ type ServiceUserTestSuite struct {
 func (s *ServiceUserTestSuite) SetupSuite() {
 	mockRepo := repository.NewMockRepo()
 	mockClient := NewFBClientMock()
-	us := NewUserService(mockClient, mockRepo)
+	logger, _ := zap.NewProduction()
+	us := NewUserService(mockClient, mockRepo, logger)
 	s.mockRepo = mockRepo
 	s.mockClient = mockClient
 	s.us = us
