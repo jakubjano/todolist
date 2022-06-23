@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"firebase.google.com/go/auth"
-	"fmt"
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -45,13 +44,14 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 	// AuthFromMD searches for Authorization header from request that is carried by context
 	jwt, err := grpcAuth.AuthFromMD(ctx, "bearer")
 	if err != nil {
-		fmt.Println(err)
+		t.logger.Error(err.Error())
 		return nil, err
 	}
 	// VerifyIDToken searches for projectID in key automatically when client was initialized with service account
 	// credentials
 	token, err := t.authClient.VerifyIDToken(ctx, jwt)
 	if err != nil {
+		t.logger.Error(err.Error())
 		return nil, err
 	}
 	data := token.Claims
@@ -63,4 +63,3 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 	newCtx := context.WithValue(ctx, "user", ctxUser)
 	return newCtx, nil
 }
-

@@ -28,7 +28,7 @@ func (s *RepoUserTestSuite) SetupSuite() {
 	if err != nil {
 		panic(err)
 	}
-	userRepo := NewFSUser(client.Collection("User"))
+	userRepo := NewFSUser(client.Collection("users"))
 	s.userRepo = userRepo
 	s.client = client
 }
@@ -86,7 +86,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 	}
 
 	for _, user := range users {
-		docRef := s.client.Collection("User").Doc(user.UserID) //todo naming convention -> collections with lowercase plural
+		docRef := s.client.Collection("users").Doc(user.UserID) //todo naming convention -> collections with lowercase plural
 		batchCreate.Set(docRef, user)
 	}
 	_, err := batchCreate.Commit(ctx)
@@ -96,7 +96,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 func (s *RepoUserTestSuite) TearDownTest() {
 	// clear all data from DB after every test
 	ctx := context.Background()
-	docs, err := s.client.Collection("User").Documents(ctx).GetAll()
+	docs, err := s.client.Collection("users").Documents(ctx).GetAll()
 	s.NoError(err)
 	batch := s.client.Batch()
 	for _, doc := range docs {
@@ -157,7 +157,7 @@ func (s *RepoUserTestSuite) TestGetUser() {
 			UserID:         "999",
 			ExpectedResult: User{},
 			ExpectedError: status.Error(codes.NotFound,
-				"\"projects/dummy-project-id/databases/(default)/documents/User/999\" not found"),
+				"\"projects/dummy-project-id/databases/(default)/documents/users/999\" not found"),
 			ExpectedCode: codes.NotFound,
 		},
 		// candidate 4: invalid input
@@ -165,7 +165,7 @@ func (s *RepoUserTestSuite) TestGetUser() {
 			UserID:         "",
 			ExpectedResult: User{},
 			ExpectedError: status.Error(codes.InvalidArgument,
-				"Document name \"projects/dummy-project-id/databases/(default)/documents/User/\" has invalid trailing \"/\"."),
+				"Document name \"projects/dummy-project-id/databases/(default)/documents/users/\" has invalid trailing \"/\"."),
 			ExpectedCode: codes.InvalidArgument,
 		},
 	}
@@ -209,8 +209,8 @@ func (s *RepoUserTestSuite) TestUpdateUser() {
 		user, err := s.userRepo.Update(ctx, candidate.UserID, candidate.ExpectedResult)
 		s.Equal(candidate.ExpectedResult, user)
 		s.Equal(candidate.ExpectedError, err)
-		//Todo get user and check if updated correctly
-		// Get(user) == ExpectedResult
+
+		//get user and check if updated correctly
 		userGet, err := s.userRepo.Get(ctx, candidate.UserID)
 		s.NoError(err)
 		s.Equal(candidate.ExpectedResult, userGet)
@@ -237,9 +237,6 @@ func (s *RepoUserTestSuite) TestDeleteUser() {
 		s.Equal(candidate.ExpectedError, err)
 		_, err = s.userRepo.Get(ctx, candidate.UserID)
 		s.Equal(codes.NotFound, status.Code(err))
-
-		//todo check if document is deleted
-		// get user via client
 
 	}
 }
