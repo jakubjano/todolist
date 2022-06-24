@@ -10,9 +10,9 @@ import (
 // dockerize emulator via docker-compose.yml
 
 type FSUserInterface interface {
-	Get(ctx context.Context, UserID string) (User, error)
-	Update(ctx context.Context, userID string, user User) (User, error)
-	Delete(ctx context.Context, UserID string) error
+	Get(ctx context.Context, UserId string) (User, error)
+	Update(ctx context.Context, UserId string, user User) (User, error)
+	Delete(ctx context.Context, UserId string) error
 }
 
 type FSUser struct {
@@ -25,8 +25,8 @@ func NewFSUser(fs *firestore.CollectionRef) *FSUser {
 	}
 }
 
-func (a *FSUser) Get(ctx context.Context, UserID string) (User, error) {
-	doc, err := a.fs.Doc(UserID).Get(ctx)
+func (a *FSUser) Get(ctx context.Context, UserId string) (User, error) {
+	doc, err := a.fs.Doc(UserId).Get(ctx)
 	if err != nil {
 		return User{}, err
 	}
@@ -38,18 +38,18 @@ func (a *FSUser) Get(ctx context.Context, UserID string) (User, error) {
 	return user, nil
 }
 
-func (a *FSUser) Update(ctx context.Context, userID string, user User) (User, error) {
-	_, err := a.fs.Doc(userID).Set(ctx, user)
+func (a *FSUser) Update(ctx context.Context, UserId string, user User) (User, error) {
+	_, err := a.fs.Doc(UserId).Set(ctx, user)
 	if err != nil {
 		return User{}, err
 	}
 	return user, nil
 }
 
-func (a *FSUser) Delete(ctx context.Context, UserID string) error {
-	_, err := a.fs.Doc(UserID).Delete(ctx)
+func (a *FSUser) Delete(ctx context.Context, UserId string) error {
+	_, err := a.fs.Doc(UserId).Delete(ctx)
 	if err != nil {
-		log.Printf("Error deleting user with id %s", UserID)
+		log.Printf("Error deleting user with id %s", UserId)
 		return err
 	}
 	return nil

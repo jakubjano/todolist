@@ -23,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/tasktask"
+              "$ref": "#/definitions/taskTask"
             }
           },
           "default": {
@@ -35,7 +35,7 @@
         },
         "parameters": [
           {
-            "name": "taskID",
+            "name": "taskId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -64,7 +64,7 @@
         },
         "parameters": [
           {
-            "name": "taskID",
+            "name": "taskId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -80,7 +80,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/tasktask"
+              "$ref": "#/definitions/taskTask"
             }
           },
           "default": {
@@ -96,7 +96,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/tasktask"
+              "$ref": "#/definitions/taskTask"
             }
           }
         ],
@@ -110,7 +110,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/tasktask"
+              "$ref": "#/definitions/taskTask"
             }
           },
           "default": {
@@ -126,7 +126,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/taskupdateTaskRequest"
+              "$ref": "#/definitions/taskUpdateTaskRequest"
             }
           }
         ],
@@ -164,10 +164,10 @@
         }
       }
     },
-    "tasktask": {
+    "taskTask": {
       "type": "object",
       "properties": {
-        "taskID": {
+        "taskId": {
           "type": "string"
         },
         "createdAt": {
@@ -184,15 +184,15 @@
           "type": "string",
           "format": "int64"
         },
-        "userID": {
+        "UserId": {
           "type": "string"
         }
       }
     },
-    "taskupdateTaskRequest": {
+    "taskUpdateTaskRequest": {
       "type": "object",
       "properties": {
-        "taskID": {
+        "taskId": {
           "type": "string"
         },
         "newName": {

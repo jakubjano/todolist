@@ -36,9 +36,9 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 }
 
 func (ts *TaskService) GetTask(ctx context.Context, in *v1.GetTaskRequest) (*v1.Task, error) {
-	task, err := ts.taskRepo.Get(ctx, in.TaskID)
+	task, err := ts.taskRepo.Get(ctx, in.TaskId)
 	if err != nil {
-		log.Fatalf("error getting task with id %s: %v", in.TaskID, err)
+		log.Fatalf("error getting task with id %s: %v", in.TaskId, err)
 		return &v1.Task{}, err
 	}
 	return repository.ToApi(task), nil
@@ -50,9 +50,10 @@ func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.UpdateTaskRequest)
 		"name":        in.NewName,
 		"description": in.NewDescription,
 		"time":        in.NewTime}
-	task, err := ts.taskRepo.Update(ctx, fields, in.TaskID)
+	task, err := ts.taskRepo.Update(ctx, fields, in.TaskId)
 	if err != nil {
-		log.Fatalf("error updating task with id %s: %v", in.TaskID, err)
+		log.Fatalf("error updating task with id %s: %v", in.TaskId, err)
+		return &v1.Task{}, err
 	}
 	return repository.ToApi(task), nil
 }
@@ -69,9 +70,9 @@ func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.UpdateTaskRequest)
 //}
 
 func (ts *TaskService) DeleteTask(ctx context.Context, in *v1.DeleteTaskRequest) (*emptypb.Empty, error) {
-	err := ts.taskRepo.Delete(ctx, in.TaskID)
+	err := ts.taskRepo.Delete(ctx, in.TaskId)
 	if err != nil {
-		log.Fatalf("error deleting task with id %s: %v \n", in.TaskID, err)
+		log.Fatalf("error deleting task with id %s: %v \n", in.TaskId, err)
 		return &emptypb.Empty{}, err
 	}
 	return &emptypb.Empty{}, nil

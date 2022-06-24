@@ -20,7 +20,7 @@ func NewTokenClient(authClient *auth.Client, logger *zap.Logger) *TokenClient {
 }
 
 type UserContext struct {
-	UserID string
+	UserId string
 	Email  string
 	Role   string
 }
@@ -56,7 +56,7 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 	}
 	data := token.Claims
 	ctxUser := &UserContext{
-		UserID: data["user_id"].(string),
+		UserId: data["user_id"].(string),
 		Email:  data["email"].(string),
 		Role:   data["role"].(string),
 	}

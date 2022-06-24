@@ -40,7 +40,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 	batchCreate := s.client.Batch()
 	users := []User{
 		{
-			UserID:    "1",
+			UserId:    "1",
 			Email:     "example1@tst.com",
 			FirstName: "fn1",
 			LastName:  "ln1",
@@ -49,7 +49,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 		},
 
 		{
-			UserID:    "2",
+			UserId:    "2",
 			Email:     "example2@tst.com",
 			FirstName: "fn2",
 			LastName:  "ln2",
@@ -58,7 +58,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 		},
 
 		{
-			UserID:    "3",
+			UserId:    "3",
 			Email:     "",
 			FirstName: "",
 			LastName:  "",
@@ -67,7 +67,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 		},
 
 		{
-			UserID:    "four",
+			UserId:    "four",
 			Email:     "example4@tst.com",
 			FirstName: "fn4",
 			LastName:  "ln4",
@@ -76,7 +76,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 		},
 
 		{
-			UserID:    "5",
+			UserId:    "5",
 			Email:     "",
 			FirstName: "fn5",
 			LastName:  "ln5",
@@ -86,7 +86,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 	}
 
 	for _, user := range users {
-		docRef := s.client.Collection("users").Doc(user.UserID) //todo naming convention -> collections with lowercase plural
+		docRef := s.client.Collection("users").Doc(user.UserId) //todo naming convention -> collections with lowercase plural
 		batchCreate.Set(docRef, user)
 	}
 	_, err := batchCreate.Commit(ctx)
@@ -116,16 +116,16 @@ func (s *RepoUserTestSuite) TearDownSuite() {
 func (s *RepoUserTestSuite) TestGetUser() {
 	ctx := context.Background()
 	candidates := []struct {
-		UserID         string
+		UserId         string
 		ExpectedResult User
 		ExpectedError  error
 		ExpectedCode   codes.Code
 	}{
 		// candidate 1: valid input
 		{
-			UserID: "1",
+			UserId: "1",
 			ExpectedResult: User{
-				UserID:    "1",
+				UserId:    "1",
 				Email:     "example1@tst.com",
 				FirstName: "fn1",
 				LastName:  "ln1",
@@ -136,9 +136,9 @@ func (s *RepoUserTestSuite) TestGetUser() {
 		},
 		// candidate 2: valid input
 		{
-			UserID: "5",
+			UserId: "5",
 			ExpectedResult: User{
-				UserID:    "5",
+				UserId:    "5",
 				Email:     "",
 				FirstName: "fn5",
 				LastName:  "ln5",
@@ -148,13 +148,13 @@ func (s *RepoUserTestSuite) TestGetUser() {
 		},
 		// candidate 3: valid input
 		{
-			UserID:         "3",
-			ExpectedResult: User{UserID: "3"},
+			UserId:         "3",
+			ExpectedResult: User{UserId: "3"},
 			ExpectedError:  nil,
 		},
 		// candidate 4: doc not found
 		{
-			UserID:         "999",
+			UserId:         "999",
 			ExpectedResult: User{},
 			ExpectedError: status.Error(codes.NotFound,
 				"\"projects/dummy-project-id/databases/(default)/documents/users/999\" not found"),
@@ -162,7 +162,7 @@ func (s *RepoUserTestSuite) TestGetUser() {
 		},
 		// candidate 4: invalid input
 		{
-			UserID:         "",
+			UserId:         "",
 			ExpectedResult: User{},
 			ExpectedError: status.Error(codes.InvalidArgument,
 				"Document name \"projects/dummy-project-id/databases/(default)/documents/users/\" has invalid trailing \"/\"."),
@@ -171,7 +171,7 @@ func (s *RepoUserTestSuite) TestGetUser() {
 	}
 
 	for i, candidate := range candidates {
-		user, err := s.userRepo.Get(ctx, candidate.UserID)
+		user, err := s.userRepo.Get(ctx, candidate.UserId)
 		s.Equalf(candidate.ExpectedResult, user, "candidate %d", i+1)
 		s.Equalf(candidate.ExpectedError, err, "candidate %d", i+1)
 		s.Equalf(candidate.ExpectedCode, status.Code(err), "candidate %d", i+1)
@@ -182,14 +182,14 @@ func (s *RepoUserTestSuite) TestGetUser() {
 func (s *RepoUserTestSuite) TestUpdateUser() {
 	ctx := context.Background()
 	candidates := []struct {
-		UserID         string
+		UserId         string
 		ExpectedResult User
 		ExpectedError  error
 	}{
 		{
-			UserID: "1",
+			UserId: "1",
 			ExpectedResult: User{
-				UserID:    "1",
+				UserId:    "1",
 				Email:     "example1@tst.com",
 				FirstName: "fn1",
 				LastName:  "ln1",
@@ -199,19 +199,19 @@ func (s *RepoUserTestSuite) TestUpdateUser() {
 			ExpectedError: nil,
 		},
 
-		{UserID: "999",
+		{UserId: "999",
 			ExpectedResult: User{},
 			ExpectedError:  nil,
 		},
 	}
 
 	for _, candidate := range candidates {
-		user, err := s.userRepo.Update(ctx, candidate.UserID, candidate.ExpectedResult)
+		user, err := s.userRepo.Update(ctx, candidate.UserId, candidate.ExpectedResult)
 		s.Equal(candidate.ExpectedResult, user)
 		s.Equal(candidate.ExpectedError, err)
 
 		//get user and check if updated correctly
-		userGet, err := s.userRepo.Get(ctx, candidate.UserID)
+		userGet, err := s.userRepo.Get(ctx, candidate.UserId)
 		s.NoError(err)
 		s.Equal(candidate.ExpectedResult, userGet)
 	}
@@ -220,22 +220,22 @@ func (s *RepoUserTestSuite) TestUpdateUser() {
 func (s *RepoUserTestSuite) TestDeleteUser() {
 	ctx := context.Background()
 	candidates := []struct {
-		UserID        string
+		UserId        string
 		ExpectedError error
 	}{
 		{
-			UserID:        "1",
+			UserId:        "1",
 			ExpectedError: nil,
 		},
 		{
-			UserID:        "999",
+			UserId:        "999",
 			ExpectedError: nil,
 		},
 	}
 	for _, candidate := range candidates {
-		err := s.userRepo.Delete(ctx, candidate.UserID)
+		err := s.userRepo.Delete(ctx, candidate.UserId)
 		s.Equal(candidate.ExpectedError, err)
-		_, err = s.userRepo.Get(ctx, candidate.UserID)
+		_, err = s.userRepo.Get(ctx, candidate.UserId)
 		s.Equal(codes.NotFound, status.Code(err))
 
 	}

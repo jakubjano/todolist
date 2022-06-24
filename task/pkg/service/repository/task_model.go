@@ -8,9 +8,9 @@ type Task struct {
 	CreatedAt   int64  `firestore:"createdAt"`
 	Name        string `firestore:"name"`
 	Description string `firestore:"description"`
-	UserID      string `firestore:"userID"`
+	UserId      string `firestore:"userId"`
 	Time        int64  `firestore:"time"`
-	TaskID      string `firestore:"taskID"`
+	TaskId      string `firestore:"taskId"`
 }
 
 func TaskFromMsg(msg *v1.Task) Task {
@@ -18,19 +18,19 @@ func TaskFromMsg(msg *v1.Task) Task {
 		CreatedAt:   msg.CreatedAt,
 		Name:        msg.Name,
 		Description: msg.Description,
-		UserID:      msg.UserID,
+		UserId:      msg.UserId,
 		Time:        msg.Time,
-		TaskID:      msg.TaskID,
+		TaskId:      msg.TaskId,
 	}
 }
 
 func ToApi(task Task) *v1.Task {
 	return &v1.Task{
-		TaskID:      task.TaskID,
+		TaskId:      task.TaskId,
 		CreatedAt:   task.CreatedAt,
 		Name:        task.Name,
 		Description: task.Description,
 		Time:        task.Time,
-		UserID:      task.UserID,
+		UserId:      task.UserId,
 	}
 }

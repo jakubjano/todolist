@@ -7,54 +7,54 @@ import "google/protobuf/empty.proto";
 
 service TaskService {
 
-  rpc CreateTask(task) returns (task){
+  rpc CreateTask(Task) returns (Task){
     option (google.api.http) = {
       post: "/task"
       body: "*"
     };
   }
 
-  rpc GetTask(getTaskRequest) returns (task){
+  rpc GetTask(GetTaskRequest) returns (Task){
     option (google.api.http) = {
       get: "/task"
     };
   }
 
-  rpc UpdateTask(updateTaskRequest) returns (task){
+  rpc UpdateTask(UpdateTaskRequest) returns (Task){
     option (google.api.http) = {
       patch: "/task"
       body: "*"
     };
   }
 
-  rpc DeleteTask(deleteTaskRequest) returns (google.protobuf.Empty) {
+  rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete: "/task"
     };
   }
 }
 
-message task {
-  string taskID = 1;
-  int64 createdAt = 2;
+message Task {
+  string task_id = 1;
+  int64 created_at = 2;
   string name = 3;
   string description = 4;
   int64 time = 5;
-  string userID = 6;
+  string user_id = 6;
 }
 
-message getTaskRequest {
-  string taskID = 1;
+message GetTaskRequest {
+  string task_id = 1;
 }
 
-message deleteTaskRequest {
-  string taskID = 1;
+message DeleteTaskRequest {
+  string task_id = 1;
 }
 
-message updateTaskRequest {
-  string taskID = 1;
-  string newName = 2;
-  string newDescription = 3;
-  int64 newTime = 4;
+message UpdateTaskRequest {
+  string task_id = 1;
+  string new_name = 2;
+  string new_description = 3;
+  int64 new_time = 4;
 }
 

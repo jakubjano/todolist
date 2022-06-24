@@ -36,7 +36,7 @@ func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, er
 	userCtx := ctx.Value("user").(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
-		zap.String("caller_id", userCtx.UserID),
+		zap.String("caller_id", userCtx.UserId),
 		zap.String("caller_role", userCtx.Role),
 		zap.String("updated_user_email", in.Email),
 	)
@@ -67,20 +67,20 @@ func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.U
 	userCtx := ctx.Value("user").(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
-		zap.String("caller_id", userCtx.UserID),
+		zap.String("caller_id", userCtx.UserId),
 		zap.String("caller_role", userCtx.Role),
-		zap.String("get_user_id", in.UserID),
+		zap.String("get_user_id", in.UserId),
 	)
 	switch userCtx.Role {
 	case "admin":
 		log.Info("Admin authorized")
 	case "user":
-		if userCtx.UserID != in.UserID {
+		if userCtx.UserId != in.UserId {
 			log.Error(ErrUnauthorized.Error())
 			return &v1.User{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
 		}
 	}
-	user, err := s.userRepo.Get(ctx, in.UserID)
+	user, err := s.userRepo.Get(ctx, in.UserId)
 	if err != nil {
 		log.Error(err.Error())
 		return &v1.User{}, status.Error(http.StatusBadRequest, err.Error())
@@ -92,21 +92,21 @@ func (s *UserService) DeleteUser(ctx context.Context, in *v1.DeleteUserRequest) 
 	userCtx := ctx.Value("user").(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
-		zap.String("caller_id", userCtx.UserID),
+		zap.String("caller_id", userCtx.UserId),
 		zap.String("caller_role", userCtx.Role),
-		zap.String("delete_user_id", in.UserID),
+		zap.String("delete_user_id", in.UserId),
 	)
 	if userCtx.Role != "admin" {
 		return &emptypb.Empty{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
 	}
 	log.Info("Admin authorized")
-	err := s.authClient.DeleteUser(ctx, in.UserID)
+	err := s.authClient.DeleteUser(ctx, in.UserId)
 	if err != nil {
 		log.Error(err.Error())
 		return &emptypb.Empty{}, status.Error(http.StatusBadRequest, err.Error())
 	}
 	log.Info("deleted user from FB")
-	err = s.userRepo.Delete(ctx, in.UserID)
+	err = s.userRepo.Delete(ctx, in.UserId)
 	if err != nil {
 		log.Error(err.Error())
 		return &emptypb.Empty{}, status.Error(http.StatusInternalServerError, err.Error())

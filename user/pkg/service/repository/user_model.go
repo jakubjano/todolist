@@ -3,7 +3,7 @@ package repository
 import v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
 
 type User struct {
-	UserID    string `firestore:"UserID"`
+	UserId    string `firestore:"UserId"`
 	Email     string `firestore:"Email"`
 	FirstName string `firestore:"FirstName"`
 	LastName  string `firestore:"LastName"`
@@ -18,13 +18,13 @@ func (u User) ToApi() *v1.User {
 		Phone:     u.Phone,
 		Address:   u.Address,
 		Email:     u.Email,
-		UserID:    u.UserID,
+		UserId:    u.UserId,
 	}
 
 }
 func UserFromMsg(msg *v1.User) User {
 	return User{
-		UserID:    msg.UserID,
+		UserId:    msg.UserId,
 		Email:     msg.Email,
 		FirstName: msg.FirstName,
 		LastName:  msg.LastName,
