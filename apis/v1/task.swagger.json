@@ -23,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/taskTask"
+              "$ref": "#/definitions/tasktask"
             }
           },
           "default": {
@@ -35,7 +35,7 @@
         },
         "parameters": [
           {
-            "name": "TaskID",
+            "name": "taskID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -64,7 +64,7 @@
         },
         "parameters": [
           {
-            "name": "TaskID",
+            "name": "taskID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -80,7 +80,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/taskTask"
+              "$ref": "#/definitions/tasktask"
             }
           },
           "default": {
@@ -96,7 +96,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/taskTask"
+              "$ref": "#/definitions/tasktask"
             }
           }
         ],
@@ -110,7 +110,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/taskTask"
+              "$ref": "#/definitions/tasktask"
             }
           },
           "default": {
@@ -126,7 +126,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/taskUpdateTaskRequest"
+              "$ref": "#/definitions/taskupdateTaskRequest"
             }
           }
         ],
@@ -164,44 +164,44 @@
         }
       }
     },
-    "taskTask": {
+    "tasktask": {
       "type": "object",
       "properties": {
-        "TaskID": {
+        "taskID": {
           "type": "string"
         },
-        "CreatedAt": {
+        "createdAt": {
           "type": "string",
           "format": "int64"
         },
-        "Name": {
+        "name": {
           "type": "string"
         },
-        "Description": {
+        "description": {
           "type": "string"
         },
-        "Time": {
+        "time": {
           "type": "string",
           "format": "int64"
         },
-        "UserID": {
+        "userID": {
           "type": "string"
         }
       }
     },
-    "taskUpdateTaskRequest": {
+    "taskupdateTaskRequest": {
       "type": "object",
       "properties": {
-        "TaskID": {
+        "taskID": {
           "type": "string"
         },
-        "NewName": {
+        "newName": {
           "type": "string"
         },
-        "NewDescription": {
+        "newDescription": {
           "type": "string"
         },
-        "NewTime": {
+        "newTime": {
           "type": "string",
           "format": "int64"
         }

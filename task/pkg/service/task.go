@@ -29,7 +29,8 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 	//todo handle time
 	task, err := ts.taskRepo.Create(ctx, repository.TaskFromMsg(in))
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		log.Fatalf("error crating task: %v", err)
+		return &v1.Task{}, err
 	}
 	return repository.ToApi(task), nil
 }
@@ -37,7 +38,7 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 func (ts *TaskService) GetTask(ctx context.Context, in *v1.GetTaskRequest) (*v1.Task, error) {
 	task, err := ts.taskRepo.Get(ctx, in.TaskID)
 	if err != nil {
-		log.Fatalf("Error getting task with id %s: %v", in.TaskID, err)
+		log.Fatalf("error getting task with id %s: %v", in.TaskID, err)
 		return &v1.Task{}, err
 	}
 	return repository.ToApi(task), nil
@@ -46,12 +47,12 @@ func (ts *TaskService) GetTask(ctx context.Context, in *v1.GetTaskRequest) (*v1.
 func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.UpdateTaskRequest) (*v1.Task, error) {
 	fields := map[string]interface{}{
 		// passing keys like this does not seem right
-		"Name":        in.NewName,
-		"Description": in.NewDescription,
-		"Time":        in.NewTime}
+		"name":        in.NewName,
+		"description": in.NewDescription,
+		"time":        in.NewTime}
 	task, err := ts.taskRepo.Update(ctx, fields, in.TaskID)
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		log.Fatalf("error updating task with id %s: %v", in.TaskID, err)
 	}
 	return repository.ToApi(task), nil
 }

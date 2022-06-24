@@ -22,6 +22,10 @@ gen:
 	make generate/go SERVICE_NAME=task
 	make generate/gateway SERVICE_NAME=task
 
+	make generate SERVICE_NAME=user
+	make generate/go SERVICE_NAME=user
+	make generate/gateway SERVICE_NAME=user
+
 
 
 ##   \e[34mgenerate\e[0m
