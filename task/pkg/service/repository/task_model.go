@@ -5,12 +5,12 @@ import (
 )
 
 type Task struct {
-	CreatedAt   int64  `firestore:"CreatedAt"`
-	Name        string `firestore:"Name"`
-	Description string `firestore:"Description"`
-	UserID      string `firestore:"UserID"`
-	Time        int64  `firestore:"Time"`
-	TaskID      string `firestore:"TaskID"`
+	CreatedAt   int64  `firestore:"createdAt"`
+	Name        string `firestore:"name"`
+	Description string `firestore:"description"`
+	UserID      string `firestore:"userID"`
+	Time        int64  `firestore:"time"`
+	TaskID      string `firestore:"taskID"`
 }
 
 func TaskFromMsg(msg *v1.Task) Task {

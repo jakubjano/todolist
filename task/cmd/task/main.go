@@ -19,21 +19,14 @@ import (
 	"net/http"
 )
 
-var (
-	defaults = map[string]interface{}{
-		"gatewayPort": ":8181",
-		"httpAddr":    ":8180",
-		"secretPath":  "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json",
-	}
-)
-
 func main() {
 	//todo
 	// logger task service
 
-	for k, v := range defaults {
-		viper.SetDefault(k, v)
-	}
+	viper.SetDefault("gatewayPort", ":8181")
+	viper.SetDefault("httpAddr", ":8180")
+	viper.SetDefault("secretPath", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
+
 	// for future config files
 	viper.AddConfigPath("$HOME/.appname")
 	viper.AddConfigPath(".")
@@ -42,9 +35,9 @@ func main() {
 		fmt.Printf("error config not found: %v \n", err)
 	}
 
-	gwPort := viper.Get("gatewayPort").(string)
+	gwPort := viper.GetString("gatewayPort")
 	ctx := context.Background()
-	key := option.WithCredentialsFile(viper.Get("secretPath").(string))
+	key := option.WithCredentialsFile(viper.GetString("secretPath"))
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
@@ -108,9 +101,9 @@ func main() {
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	fmt.Printf("starting http server at '%s'\n", viper.Get("httpAddr").(string))
+	fmt.Printf("starting http server at '%s'\n", viper.GetString("httpAddr"))
 
-	err = http.ListenAndServe(viper.Get("httpAddr").(string), mux)
+	err = http.ListenAndServe(viper.GetString("httpAddr"), mux)
 	if err != nil {
 		panic(err)
 	}
