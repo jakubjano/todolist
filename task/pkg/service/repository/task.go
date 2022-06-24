@@ -18,9 +18,9 @@ type FSTask struct {
 	fs *firestore.CollectionRef
 }
 
-func NewFSTask(fst *firestore.CollectionRef) *FSTask {
+func NewFSTask(fs *firestore.CollectionRef) *FSTask {
 	return &FSTask{
-		fs: fst,
+		fs: fs,
 	}
 }
 

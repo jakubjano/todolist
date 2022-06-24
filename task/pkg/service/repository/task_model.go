@@ -4,6 +4,10 @@ import (
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
 )
 
+const (
+	COLLECTION_TASKS = "tasks"
+)
+
 type Task struct {
 	CreatedAt   int64  `firestore:"createdAt"`
 	Name        string `firestore:"name"`

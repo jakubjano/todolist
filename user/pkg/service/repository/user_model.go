@@ -2,6 +2,10 @@ package repository
 
 import v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
 
+const (
+	USERS_COLLECTION = "users"
+)
+
 type User struct {
 	UserId    string `firestore:"UserId"`
 	Email     string `firestore:"Email"`

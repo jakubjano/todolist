@@ -28,9 +28,9 @@ func main() {
 	//todo
 	// dotfiles $HOME/.config/ for viper and terraform ?
 
-	viper.SetDefault("gatewayPort", ":8081")
-	viper.SetDefault("httpAddr", ":8080")
-	viper.SetDefault("secretPath", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
+	viper.SetDefault("gateway.port", ":8081")
+	viper.SetDefault("http.address", ":8080")
+	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
 
 	logger, err := service.NewLogger()
 	if err != nil {
@@ -46,9 +46,9 @@ func main() {
 		logger.Warn("error finding config file, using default values", zap.Error(err))
 	}
 
-	gwPort := viper.GetString("gatewayPort")
+	gwPort := viper.GetString("gateway.port")
 	ctx := context.Background()
-	key := option.WithCredentialsFile(viper.GetString("secretPath"))
+	key := option.WithCredentialsFile(viper.GetString("secret.path"))
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
@@ -66,7 +66,7 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	userRepo := repository.NewFSUser(client.Collection("users"))
+	userRepo := repository.NewFSUser(client.Collection(repository.USERS_COLLECTION))
 	userService := service.NewUserService(authClient, userRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient, logger)
 
@@ -110,9 +110,9 @@ func main() {
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	fmt.Printf("starting http server at '%s'\n", viper.GetString("httpAddr"))
+	fmt.Printf("starting http server at '%s'\n", viper.GetString("http.address"))
 
-	err = http.ListenAndServe(viper.GetString("httpAddr"), mux)
+	err = http.ListenAndServe(viper.GetString("http.address"), mux)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}

@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"jakubjano/todolist/task/pkg/service"
 	"jakubjano/todolist/task/pkg/service/repository"
+	"log"
 	"net"
 	"net/http"
 )
@@ -23,21 +24,21 @@ func main() {
 	//todo
 	// logger task service
 
-	viper.SetDefault("gatewayPort", ":8181")
-	viper.SetDefault("httpAddr", ":8180")
-	viper.SetDefault("secretPath", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
+	viper.SetDefault("gateway.port", ":8181")
+	viper.SetDefault("http.address", ":8180")
+	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
 
-	// for future config files
+	//todo for future config files - can't panic here because config doesn't exist yet
 	viper.AddConfigPath("$HOME/.appname")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("error config not found: %v \n", err)
+		log.Printf("error config not found: %v \n", err)
 	}
 
-	gwPort := viper.GetString("gatewayPort")
+	gwPort := viper.GetString("gateway.port")
 	ctx := context.Background()
-	key := option.WithCredentialsFile(viper.GetString("secretPath"))
+	key := option.WithCredentialsFile(viper.GetString("secret.path"))
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
@@ -55,10 +56,7 @@ func main() {
 		panic(err)
 	}
 
-	//todo
-	// taskRepo
-	// taskService
-	taskRepo := repository.NewFSTask(client.Collection("tasks"))
+	taskRepo := repository.NewFSTask(client.Collection(repository.COLLECTION_TASKS))
 	taskService := service.NewTaskService(authClient, taskRepo)
 
 	lis, err := net.Listen("tcp", gwPort)
@@ -72,7 +70,7 @@ func main() {
 			//tokenClient.CustomUnaryInterceptor(),
 		),
 	)
-	v1.RegisterTaskServiceServer(s, taskService) // todo taskService
+	v1.RegisterTaskServiceServer(s, taskService)
 	reflection.Register(s)
 
 	go func() {
@@ -101,9 +99,9 @@ func main() {
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	fmt.Printf("starting http server at '%s'\n", viper.GetString("httpAddr"))
+	fmt.Printf("starting http server at '%s'\n", viper.GetString("http.address"))
 
-	err = http.ListenAndServe(viper.GetString("httpAddr"), mux)
+	err = http.ListenAndServe(viper.GetString("http.address"), mux)
 	if err != nil {
 		panic(err)
 	}
