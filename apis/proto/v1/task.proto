@@ -1,12 +1,40 @@
 syntax = "proto3";
 
 package task;
+option go_package = ".;v1";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 service TaskService {
 
+  rpc CreateTask(Task) returns (Task){
+    option (google.api.http) = {
+      post: "/task"
+      body: "*"
+    };
+  }
+
+  rpc GetTask(GetTaskRequest) returns (Task){
+    option (google.api.http) = {
+      get: "/task"
+    };
+  }
+
+  rpc UpdateTask(UpdateTaskRequest) returns (Task){
+    option (google.api.http) = {
+      patch: "/task"
+      body: "*"
+    };
+  }
+
+  rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/task"
+    };
+  }
 }
 
-message Create {
+message Task {
   string TaskID = 1;
   int64 CreatedAt = 2;
   string Name = 3;
@@ -15,12 +43,18 @@ message Create {
   string UserID = 6;
 }
 
-message Update {
-  string NewName = 1;
-  string NewDescription = 2;
-  int64 NewTime = 3;
-}
-
-message Delete {
+message GetTaskRequest {
   string TaskID = 1;
 }
+
+message DeleteTaskRequest {
+  string TaskID = 1;
+}
+
+message UpdateTaskRequest {
+  string TaskID = 1;
+  string NewName = 2;
+  string NewDescription = 3;
+  int64 NewTime = 4;
+}
+
