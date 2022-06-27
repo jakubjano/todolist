@@ -42,7 +42,7 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 		// user role authorized, valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "id1",
+				UserID: "id1",
 				Email:  "test@example.com",
 				Role:   "user",
 			}),
@@ -61,7 +61,7 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 		// user role unauthorized, valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "id2",
+				UserID: "id2",
 				Email:  "test2@example.com",
 				Role:   "user",
 			}),
@@ -73,7 +73,7 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 		//admin role authorized invalid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "idadmin",
+				UserID: "idadmin",
 				Email:  "jakub@test.com",
 				Role:   "admin",
 			}),
@@ -85,7 +85,7 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 		//admin role authorized valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "idadmin",
+				UserID: "idadmin",
 				Email:  "jakub@test.com",
 				Role:   "admin",
 			}),
@@ -104,7 +104,7 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 
 	for i, candidate := range candidates {
 		s.mockRepo.On("Get", candidate.ctx, candidate.in.UserId).Return(repository.User{
-			UserId:    candidate.ExpectedResult.UserId,
+			UserID:    candidate.ExpectedResult.UserId,
 			Email:     candidate.ExpectedResult.Email,
 			FirstName: candidate.ExpectedResult.FirstName,
 			LastName:  candidate.ExpectedResult.LastName,
@@ -129,7 +129,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 		// user role authorized valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "id1",
+				UserID: "id1",
 				Email:  "user@test.com",
 				Role:   "user",
 			}),
@@ -155,7 +155,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 		// admin role authorized valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "id1",
+				UserID: "id1",
 				Email:  "admin@test.com",
 				Role:   "admin",
 			}),
@@ -181,7 +181,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 		// admin role authorized invalid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "id1",
+				UserID: "id1",
 				Email:  "admin@test.com",
 				Role:   "admin",
 			}),
@@ -201,7 +201,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 		// user role unauthorized valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "id1",
+				UserID: "id1",
 				Email:  "user@test.com",
 				Role:   "user",
 			}),
@@ -228,7 +228,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 
 		s.mockRepo.On("Update", candidate.ctx, candidate.in.UserId, repository.UserFromMsg(candidate.in)).
 			Return(repository.User{
-				UserId:    candidate.ExpectedResult.UserId,
+				UserID:    candidate.ExpectedResult.UserId,
 				Email:     candidate.ExpectedResult.Email,
 				FirstName: candidate.ExpectedResult.FirstName,
 				LastName:  candidate.ExpectedResult.LastName,
@@ -253,7 +253,7 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 		// user trying to delete valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "id1",
+				UserID: "id1",
 				Email:  "test@example.com",
 				Role:   "user",
 			}),
@@ -264,7 +264,7 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 		// admin trying to delete valid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "idadmin",
+				UserID: "idadmin",
 				Email:  "test@admin.com",
 				Role:   "admin",
 			}),
@@ -275,7 +275,7 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 		// admin trying to delete invalid input
 		{
 			ctx: context.WithValue(ctx, "user", &middleware.UserContext{
-				UserId: "idadmin",
+				UserID: "idadmin",
 				Email:  "test@admin.com",
 				Role:   "admin",
 			}),

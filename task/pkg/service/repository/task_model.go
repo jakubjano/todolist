@@ -5,16 +5,16 @@ import (
 )
 
 const (
-	COLLECTION_TASKS = "tasks"
+	CollectionTasks = "tasks"
 )
 
 type Task struct {
 	CreatedAt   int64  `firestore:"createdAt"`
 	Name        string `firestore:"name"`
 	Description string `firestore:"description"`
-	UserId      string `firestore:"userId"`
+	UserID      string `firestore:"userID"`
 	Time        int64  `firestore:"time"`
-	TaskId      string `firestore:"taskId"`
+	TaskID      string `firestore:"taskID"`
 }
 
 func TaskFromMsg(msg *v1.Task) Task {
@@ -22,19 +22,19 @@ func TaskFromMsg(msg *v1.Task) Task {
 		CreatedAt:   msg.CreatedAt,
 		Name:        msg.Name,
 		Description: msg.Description,
-		UserId:      msg.UserId,
+		UserID:      msg.UserId,
 		Time:        msg.Time,
-		TaskId:      msg.TaskId,
+		TaskID:      msg.TaskId,
 	}
 }
 
 func ToApi(task Task) *v1.Task {
 	return &v1.Task{
-		TaskId:      task.TaskId,
+		TaskId:      task.TaskID,
 		CreatedAt:   task.CreatedAt,
 		Name:        task.Name,
 		Description: task.Description,
 		Time:        task.Time,
-		UserId:      task.UserId,
+		UserId:      task.UserID,
 	}
 }

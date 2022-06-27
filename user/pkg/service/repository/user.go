@@ -3,7 +3,6 @@ package repository
 import (
 	"cloud.google.com/go/firestore"
 	"context"
-	"log"
 )
 
 //TODO test on emulated FS dtb
@@ -49,7 +48,6 @@ func (a *FSUser) Update(ctx context.Context, UserId string, user User) (User, er
 func (a *FSUser) Delete(ctx context.Context, UserId string) error {
 	_, err := a.fs.Doc(UserId).Delete(ctx)
 	if err != nil {
-		log.Printf("Error deleting user with id %s", UserId)
 		return err
 	}
 	return nil

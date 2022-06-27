@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/reflection"
 	"jakubjano/todolist/task/pkg/service"
 	"jakubjano/todolist/task/pkg/service/repository"
-	"log"
 	"net"
 	"net/http"
 )
@@ -33,7 +32,7 @@ func main() {
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Printf("error config not found: %v \n", err)
+		fmt.Printf("error config not found: %v \n", err)
 	}
 
 	gwPort := viper.GetString("gateway.port")
@@ -56,7 +55,7 @@ func main() {
 		panic(err)
 	}
 
-	taskRepo := repository.NewFSTask(client.Collection(repository.COLLECTION_TASKS))
+	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionTasks))
 	taskService := service.NewTaskService(authClient, taskRepo)
 
 	lis, err := net.Listen("tcp", gwPort)

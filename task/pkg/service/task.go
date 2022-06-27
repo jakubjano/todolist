@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"firebase.google.com/go/auth"
+	"fmt"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"jakubjano/todolist/task/pkg/service/repository"
-	"log"
 )
 
 //type TaskClientInterface interface {
@@ -29,7 +29,7 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 	//todo handle time
 	task, err := ts.taskRepo.Create(ctx, repository.TaskFromMsg(in))
 	if err != nil {
-		log.Fatalf("error crating task: %v", err)
+		fmt.Printf("error crating task: %v", err)
 		return &v1.Task{}, err
 	}
 	return repository.ToApi(task), nil
@@ -38,7 +38,7 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 func (ts *TaskService) GetTask(ctx context.Context, in *v1.GetTaskRequest) (*v1.Task, error) {
 	task, err := ts.taskRepo.Get(ctx, in.TaskId)
 	if err != nil {
-		log.Fatalf("error getting task with id %s: %v", in.TaskId, err)
+		fmt.Printf("error getting task with id %s: %v", in.TaskId, err)
 		return &v1.Task{}, err
 	}
 	return repository.ToApi(task), nil
@@ -46,13 +46,12 @@ func (ts *TaskService) GetTask(ctx context.Context, in *v1.GetTaskRequest) (*v1.
 
 func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.UpdateTaskRequest) (*v1.Task, error) {
 	fields := map[string]interface{}{
-		// passing keys like this does not seem right
 		"name":        in.NewName,
 		"description": in.NewDescription,
 		"time":        in.NewTime}
 	task, err := ts.taskRepo.Update(ctx, fields, in.TaskId)
 	if err != nil {
-		log.Fatalf("error updating task with id %s: %v", in.TaskId, err)
+		fmt.Printf("error updating task with id %s: %v", in.TaskId, err)
 		return &v1.Task{}, err
 	}
 	return repository.ToApi(task), nil
@@ -64,7 +63,7 @@ func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.UpdateTaskRequest)
 
 //	task, err := ts.taskRepo.Update(ctx, repository.TaskFromMsg(in), in.TaskID)
 //	if err != nil {
-//		log.Fatalf("Error updating task: %v \n", err)
+//		fmt.Printf("Error updating task: %v \n", err)
 //	}
 //	return repository.ToApi(task), nil
 //}
@@ -72,7 +71,7 @@ func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.UpdateTaskRequest)
 func (ts *TaskService) DeleteTask(ctx context.Context, in *v1.DeleteTaskRequest) (*emptypb.Empty, error) {
 	err := ts.taskRepo.Delete(ctx, in.TaskId)
 	if err != nil {
-		log.Fatalf("error deleting task with id %s: %v \n", in.TaskId, err)
+		fmt.Printf("error deleting task with id %s: %v \n", in.TaskId, err)
 		return &emptypb.Empty{}, err
 	}
 	return &emptypb.Empty{}, nil

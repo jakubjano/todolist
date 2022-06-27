@@ -34,7 +34,7 @@ func main() {
 
 	logger, err := service.NewLogger()
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 	defer logger.Sync()
 
@@ -52,27 +52,27 @@ func main() {
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	client, err := app.Firestore(ctx)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 	defer client.Close()
 
 	authClient, err := app.Auth(ctx)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
-	userRepo := repository.NewFSUser(client.Collection(repository.USERS_COLLECTION))
+	userRepo := repository.NewFSUser(client.Collection(repository.CollectionUsers))
 	userService := service.NewUserService(authClient, userRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient, logger)
 
 	lis, err := net.Listen("tcp", gwPort)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	s := grpc.NewServer(
@@ -87,7 +87,7 @@ func main() {
 	go func() {
 		err = s.Serve(lis)
 		if err != nil {
-			logger.Fatal(err.Error())
+			panic(err)
 		}
 	}()
 
@@ -98,7 +98,7 @@ func main() {
 		grpc.WithBlock(),
 	)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	// Register gRPC server endpoint
@@ -106,7 +106,7 @@ func main() {
 	mux := runtime.NewServeMux()
 	err = v1.RegisterUserServiceHandler(context.Background(), mux, conn)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
@@ -114,7 +114,7 @@ func main() {
 
 	err = http.ListenAndServe(viper.GetString("http.address"), mux)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 }

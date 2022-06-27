@@ -27,7 +27,7 @@ type GetUserRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId string `protobuf:"bytes,1,opt,name=user_id,json=UserId,proto3" json:"user_id,omitempty"`
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 }
 
 func (x *GetUserRequest) Reset() {
@@ -79,7 +79,7 @@ type User struct {
 	Phone     string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
 	Address   string `protobuf:"bytes,4,opt,name=address,proto3" json:"address,omitempty"`
 	Email     string `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	UserId    string `protobuf:"bytes,6,opt,name=user_id,json=UserId,proto3" json:"user_id,omitempty"`
+	UserId    string `protobuf:"bytes,6,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 }
 
 func (x *User) Reset() {
@@ -161,7 +161,7 @@ type DeleteUserRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId string `protobuf:"bytes,1,opt,name=user_id,json=UserId,proto3" json:"user_id,omitempty"`
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 }
 
 func (x *DeleteUserRequest) Reset() {

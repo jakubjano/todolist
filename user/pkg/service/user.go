@@ -36,7 +36,7 @@ func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, er
 	userCtx := ctx.Value("user").(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
-		zap.String("caller_id", userCtx.UserId),
+		zap.String("caller_id", userCtx.UserID),
 		zap.String("caller_role", userCtx.Role),
 		zap.String("updated_user_email", in.Email),
 	)
@@ -67,7 +67,7 @@ func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.U
 	userCtx := ctx.Value("user").(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
-		zap.String("caller_id", userCtx.UserId),
+		zap.String("caller_id", userCtx.UserID),
 		zap.String("caller_role", userCtx.Role),
 		zap.String("get_user_id", in.UserId),
 	)
@@ -75,7 +75,7 @@ func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.U
 	case "admin":
 		log.Info("Admin authorized")
 	case "user":
-		if userCtx.UserId != in.UserId {
+		if userCtx.UserID != in.UserId {
 			log.Error(ErrUnauthorized.Error())
 			return &v1.User{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
 		}
@@ -92,7 +92,7 @@ func (s *UserService) DeleteUser(ctx context.Context, in *v1.DeleteUserRequest) 
 	userCtx := ctx.Value("user").(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
-		zap.String("caller_id", userCtx.UserId),
+		zap.String("caller_id", userCtx.UserID),
 		zap.String("caller_role", userCtx.Role),
 		zap.String("delete_user_id", in.UserId),
 	)

@@ -35,7 +35,7 @@
         },
         "parameters": [
           {
-            "name": "UserId",
+            "name": "userId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -64,7 +64,7 @@
         },
         "parameters": [
           {
-            "name": "UserId",
+            "name": "userId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -152,7 +152,7 @@
         "email": {
           "type": "string"
         },
-        "UserId": {
+        "userId": {
           "type": "string"
         }
       }

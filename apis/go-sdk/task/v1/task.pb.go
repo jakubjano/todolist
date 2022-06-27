@@ -32,7 +32,7 @@ type Task struct {
 	Name        string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Description string `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	Time        int64  `protobuf:"varint,5,opt,name=time,proto3" json:"time,omitempty"`
-	UserId      string `protobuf:"bytes,6,opt,name=user_id,json=UserId,proto3" json:"user_id,omitempty"`
+	UserId      string `protobuf:"bytes,6,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 }
 
 func (x *Task) Reset() {
