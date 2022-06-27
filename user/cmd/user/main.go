@@ -28,8 +28,8 @@ func main() {
 	//todo
 	// dotfiles $HOME/.config/ for viper and terraform ?
 
-	viper.SetDefault("gateway.port", ":8081")
-	viper.SetDefault("http.address", ":8080")
+	viper.SetDefault("grpc.port", ":8081")
+	viper.SetDefault("gateway.port", ":8080")
 	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
 
 	logger, err := service.NewLogger()
@@ -46,7 +46,7 @@ func main() {
 		logger.Warn("error finding config file, using default values", zap.Error(err))
 	}
 
-	gwPort := viper.GetString("gateway.port")
+	grpcPort := viper.GetString("grpc.port")
 	ctx := context.Background()
 	key := option.WithCredentialsFile(viper.GetString("secret.path"))
 
@@ -70,7 +70,7 @@ func main() {
 	userService := service.NewUserService(authClient, userRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient, logger)
 
-	lis, err := net.Listen("tcp", gwPort)
+	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		panic(err)
 	}
@@ -93,7 +93,7 @@ func main() {
 
 	conn, err := grpc.DialContext(
 		context.Background(),
-		gwPort,
+		grpcPort,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
@@ -110,9 +110,9 @@ func main() {
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	fmt.Printf("starting http server at '%s'\n", viper.GetString("http.address"))
+	fmt.Printf("starting http server at '%s'\n", viper.GetString("gateway.port"))
 
-	err = http.ListenAndServe(viper.GetString("http.address"), mux)
+	err = http.ListenAndServe(viper.GetString("gateway.port"), mux)
 	if err != nil {
 		panic(err)
 	}
