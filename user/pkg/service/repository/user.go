@@ -24,8 +24,8 @@ func NewFSUser(fs *firestore.CollectionRef) *FSUser {
 	}
 }
 
-func (a *FSUser) Get(ctx context.Context, UserId string) (User, error) {
-	doc, err := a.fs.Doc(UserId).Get(ctx)
+func (a *FSUser) Get(ctx context.Context, userID string) (User, error) {
+	doc, err := a.fs.Doc(userID).Get(ctx)
 	if err != nil {
 		return User{}, err
 	}
@@ -37,16 +37,16 @@ func (a *FSUser) Get(ctx context.Context, UserId string) (User, error) {
 	return user, nil
 }
 
-func (a *FSUser) Update(ctx context.Context, UserId string, user User) (User, error) {
-	_, err := a.fs.Doc(UserId).Set(ctx, user)
+func (a *FSUser) Update(ctx context.Context, userID string, user User) (User, error) {
+	_, err := a.fs.Doc(userID).Set(ctx, user)
 	if err != nil {
 		return User{}, err
 	}
 	return user, nil
 }
 
-func (a *FSUser) Delete(ctx context.Context, UserId string) error {
-	_, err := a.fs.Doc(UserId).Delete(ctx)
+func (a *FSUser) Delete(ctx context.Context, userID string) error {
+	_, err := a.fs.Doc(userID).Delete(ctx)
 	if err != nil {
 		return err
 	}

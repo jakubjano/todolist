@@ -7,12 +7,12 @@ const (
 )
 
 type User struct {
-	UserID    string `firestore:"UserId"`
-	Email     string `firestore:"Email"`
-	FirstName string `firestore:"FirstName"`
-	LastName  string `firestore:"LastName"`
-	Phone     string `firestore:"Phone"`
-	Address   string `firestore:"Address"`
+	UserID    string `firestore:"userID"`
+	Email     string `firestore:"email"`
+	FirstName string `firestore:"firstName"`
+	LastName  string `firestore:"lastName"`
+	Phone     string `firestore:"phone"`
+	Address   string `firestore:"address"`
 }
 
 func (u User) ToApi() *v1.User {
