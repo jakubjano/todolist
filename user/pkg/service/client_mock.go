@@ -19,7 +19,7 @@ func (m *FBClientMock) GetUserByEmail(ctx context.Context, email string) (*auth.
 	return args.Get(0).(*auth.UserRecord), args.Error(1)
 }
 
-func (m *FBClientMock) DeleteUser(ctx context.Context, UserId string) error {
-	args := m.Called(ctx, UserId)
+func (m *FBClientMock) DeleteUser(ctx context.Context, userID string) error {
+	args := m.Called(ctx, userID)
 	return args.Error(0)
 }
