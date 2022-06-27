@@ -33,23 +33,23 @@ service UserService {
 // Get user by ID
 
 message GetUserRequest {
-  string userID = 1;
+  string user_id = 1;
 }
 
 // Update user's information
 
 message User {
-  string lastName = 1;
-  string firstName = 2;
+  string last_name = 1;
+  string first_name = 2;
   string phone = 3;
   string address = 4;
   string email = 5;
-  string userID = 6;
+  string user_id = 6;
 }
 
 // Delete users
 
 message DeleteUserRequest {
-  string userID = 1;
+  string user_id = 1;
 }
 

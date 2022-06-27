@@ -3,16 +3,15 @@ package repository
 import (
 	"cloud.google.com/go/firestore"
 	"context"
-	"log"
 )
 
 //TODO test on emulated FS dtb
 // dockerize emulator via docker-compose.yml
 
 type FSUserInterface interface {
-	Get(ctx context.Context, UserID string) (User, error)
+	Get(ctx context.Context, userID string) (User, error)
 	Update(ctx context.Context, userID string, user User) (User, error)
-	Delete(ctx context.Context, UserID string) error
+	Delete(ctx context.Context, userID string) error
 }
 
 type FSUser struct {
@@ -25,8 +24,8 @@ func NewFSUser(fs *firestore.CollectionRef) *FSUser {
 	}
 }
 
-func (a *FSUser) Get(ctx context.Context, UserID string) (User, error) {
-	doc, err := a.fs.Doc(UserID).Get(ctx)
+func (a *FSUser) Get(ctx context.Context, userID string) (User, error) {
+	doc, err := a.fs.Doc(userID).Get(ctx)
 	if err != nil {
 		return User{}, err
 	}
@@ -46,10 +45,9 @@ func (a *FSUser) Update(ctx context.Context, userID string, user User) (User, er
 	return user, nil
 }
 
-func (a *FSUser) Delete(ctx context.Context, UserID string) error {
-	_, err := a.fs.Doc(UserID).Delete(ctx)
+func (a *FSUser) Delete(ctx context.Context, userID string) error {
+	_, err := a.fs.Doc(userID).Delete(ctx)
 	if err != nil {
-		log.Printf("Error deleting user with id %s", UserID)
 		return err
 	}
 	return nil

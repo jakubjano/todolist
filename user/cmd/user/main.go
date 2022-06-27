@@ -21,16 +21,6 @@ import (
 	"net/http"
 )
 
-var (
-	defaults = map[string]interface{}{
-		"gatewayPort": ":8081",
-		"httpAddr":    ":8080",
-		"secretPath":  "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json",
-
-		//todo firestore collection ref in config?
-	}
-)
-
 func main() {
 	//todo viper config
 	// defaults + config file from env
@@ -38,15 +28,16 @@ func main() {
 	//todo
 	// dotfiles $HOME/.config/ for viper and terraform ?
 
+	viper.SetDefault("grpc.port", ":8081")
+	viper.SetDefault("gateway.port", ":8080")
+	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
+
 	logger, err := service.NewLogger()
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 	defer logger.Sync()
 
-	for k, v := range defaults {
-		viper.SetDefault(k, v)
-	}
 	// for future config files
 	viper.AddConfigPath("$HOME/.appname")
 	viper.AddConfigPath(".")
@@ -55,33 +46,33 @@ func main() {
 		logger.Warn("error finding config file, using default values", zap.Error(err))
 	}
 
-	gwPort := viper.Get("gatewayPort").(string)
+	grpcPort := viper.GetString("grpc.port")
 	ctx := context.Background()
-	key := option.WithCredentialsFile(viper.Get("secretPath").(string))
+	key := option.WithCredentialsFile(viper.GetString("secret.path"))
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	client, err := app.Firestore(ctx)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 	defer client.Close()
 
 	authClient, err := app.Auth(ctx)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
-	userRepo := repository.NewFSUser(client.Collection("users"))
+	userRepo := repository.NewFSUser(client.Collection(repository.CollectionUsers))
 	userService := service.NewUserService(authClient, userRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient, logger)
 
-	lis, err := net.Listen("tcp", gwPort)
+	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	s := grpc.NewServer(
@@ -96,18 +87,18 @@ func main() {
 	go func() {
 		err = s.Serve(lis)
 		if err != nil {
-			logger.Fatal(err.Error())
+			panic(err)
 		}
 	}()
 
 	conn, err := grpc.DialContext(
 		context.Background(),
-		gwPort,
+		grpcPort,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	// Register gRPC server endpoint
@@ -115,15 +106,15 @@ func main() {
 	mux := runtime.NewServeMux()
 	err = v1.RegisterUserServiceHandler(context.Background(), mux, conn)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	fmt.Printf("starting http server at '%s'\n", viper.Get("httpAddr").(string))
+	fmt.Printf("starting http server at '%s'\n", viper.GetString("gateway.port"))
 
-	err = http.ListenAndServe(viper.Get("httpAddr").(string), mux)
+	err = http.ListenAndServe(viper.GetString("gateway.port"), mux)
 	if err != nil {
-		logger.Fatal(err.Error())
+		panic(err)
 	}
 
 }

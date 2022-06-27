@@ -46,14 +46,14 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 				Email:  "test@example.com",
 				Role:   "user",
 			}),
-			in: &v1.GetUserRequest{UserID: "id1"},
+			in: &v1.GetUserRequest{UserId: "id1"},
 			ExpectedResult: &v1.User{
 				LastName:  "anon",
 				FirstName: "user",
 				Phone:     "09500600",
 				Address:   "ad1",
 				Email:     "test@example.com",
-				UserID:    "id1",
+				UserId:    "id1",
 			},
 			ExpectedError: nil,
 		},
@@ -65,7 +65,7 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 				Email:  "test2@example.com",
 				Role:   "user",
 			}),
-			in:             &v1.GetUserRequest{UserID: "idnot2"},
+			in:             &v1.GetUserRequest{UserId: "idnot2"},
 			ExpectedResult: &v1.User{},
 			ExpectedError:  status.Error(http.StatusUnauthorized, "unauthorized entry"),
 		},
@@ -77,7 +77,7 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 				Email:  "jakub@test.com",
 				Role:   "admin",
 			}),
-			in:             &v1.GetUserRequest{UserID: ""},
+			in:             &v1.GetUserRequest{UserId: ""},
 			ExpectedResult: &v1.User{},
 			ExpectedError:  nil,
 		},
@@ -89,22 +89,22 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 				Email:  "jakub@test.com",
 				Role:   "admin",
 			}),
-			in: &v1.GetUserRequest{UserID: "id1"},
+			in: &v1.GetUserRequest{UserId: "id1"},
 			ExpectedResult: &v1.User{
 				LastName:  "user",
 				FirstName: "other",
 				Phone:     "09500600",
 				Address:   "ad1",
 				Email:     "test@example.com",
-				UserID:    "id1",
+				UserId:    "id1",
 			},
 			ExpectedError: nil,
 		},
 	}
 
 	for i, candidate := range candidates {
-		s.mockRepo.On("Get", candidate.ctx, candidate.in.UserID).Return(repository.User{
-			UserID:    candidate.ExpectedResult.UserID,
+		s.mockRepo.On("Get", candidate.ctx, candidate.in.UserId).Return(repository.User{
+			UserID:    candidate.ExpectedResult.UserId,
 			Email:     candidate.ExpectedResult.Email,
 			FirstName: candidate.ExpectedResult.FirstName,
 			LastName:  candidate.ExpectedResult.LastName,
@@ -139,7 +139,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
-				UserID:    "id1",
+				UserId:    "id1",
 			},
 			ExpectedResult: &v1.User{
 				LastName:  "test",
@@ -147,7 +147,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
-				UserID:    "id1",
+				UserId:    "id1",
 			},
 			ExpectedError: nil,
 		},
@@ -165,7 +165,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
-				UserID:    "id1",
+				UserId:    "id1",
 			},
 			ExpectedResult: &v1.User{
 				LastName:  "test",
@@ -173,7 +173,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
-				UserID:    "id1",
+				UserId:    "id1",
 			},
 			ExpectedError: nil,
 		},
@@ -191,7 +191,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "@@bad_email",
-				UserID:    "",
+				UserId:    "",
 			},
 			ExpectedResult: &v1.User{},
 			ExpectedError: status.Error(http.StatusBadRequest,
@@ -211,7 +211,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "notuser@test.com",
-				UserID:    "id33",
+				UserId:    "id33",
 			},
 			ExpectedResult: &v1.User{},
 			ExpectedError:  status.Error(http.StatusUnauthorized, "unauthorized entry"),
@@ -222,13 +222,13 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 		s.mockClient.On("GetUserByEmail", candidate.ctx, candidate.in.Email).
 			Return(&auth.UserRecord{
 				UserInfo: &auth.UserInfo{
-					UID: candidate.in.UserID,
+					UID: candidate.in.UserId,
 				},
 			}, candidate.ExpectedError)
 
-		s.mockRepo.On("Update", candidate.ctx, candidate.in.UserID, repository.UserFromMsg(candidate.in)).
+		s.mockRepo.On("Update", candidate.ctx, candidate.in.UserId, repository.UserFromMsg(candidate.in)).
 			Return(repository.User{
-				UserID:    candidate.ExpectedResult.UserID,
+				UserID:    candidate.ExpectedResult.UserId,
 				Email:     candidate.ExpectedResult.Email,
 				FirstName: candidate.ExpectedResult.FirstName,
 				LastName:  candidate.ExpectedResult.LastName,
@@ -257,7 +257,7 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 				Email:  "test@example.com",
 				Role:   "user",
 			}),
-			in:            &v1.DeleteUserRequest{UserID: "id1"},
+			in:            &v1.DeleteUserRequest{UserId: "id1"},
 			ExpectedError: status.Error(http.StatusUnauthorized, ErrUnauthorized.Error()),
 		},
 
@@ -268,7 +268,7 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 				Email:  "test@admin.com",
 				Role:   "admin",
 			}),
-			in:            &v1.DeleteUserRequest{UserID: "id1"},
+			in:            &v1.DeleteUserRequest{UserId: "id1"},
 			ExpectedError: nil,
 		},
 
@@ -279,13 +279,13 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 				Email:  "test@admin.com",
 				Role:   "admin",
 			}),
-			in:            &v1.DeleteUserRequest{UserID: ""},
+			in:            &v1.DeleteUserRequest{UserId: ""},
 			ExpectedError: nil,
 		},
 	}
 	for i, candidate := range candidates {
-		s.mockClient.On("DeleteUser", candidate.ctx, candidate.in.UserID).Return(candidate.ExpectedError)
-		s.mockRepo.On("Delete", candidate.ctx, candidate.in.UserID).Return(candidate.ExpectedError)
+		s.mockClient.On("DeleteUser", candidate.ctx, candidate.in.UserId).Return(candidate.ExpectedError)
+		s.mockRepo.On("Delete", candidate.ctx, candidate.in.UserId).Return(candidate.ExpectedError)
 		_, err := s.us.DeleteUser(candidate.ctx, candidate.in)
 		s.Equalf(candidate.ExpectedError, err, "candidate %d", i+1)
 	}

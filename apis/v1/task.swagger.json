@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "v1/user.proto",
+    "title": "v1/task.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "UserService"
+      "name": "TaskService"
     }
   ],
   "consumes": [
@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/user": {
+    "/task": {
       "get": {
-        "operationId": "UserService_GetUser",
+        "operationId": "TaskService_GetTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/userUser"
+              "$ref": "#/definitions/taskTask"
             }
           },
           "default": {
@@ -35,18 +35,18 @@
         },
         "parameters": [
           {
-            "name": "userId",
+            "name": "taskId",
             "in": "query",
             "required": false,
             "type": "string"
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       },
       "delete": {
-        "operationId": "UserService_DeleteUser",
+        "operationId": "TaskService_DeleteTask",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -64,23 +64,23 @@
         },
         "parameters": [
           {
-            "name": "userId",
+            "name": "taskId",
             "in": "query",
             "required": false,
             "type": "string"
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       },
       "post": {
-        "operationId": "UserService_UpdateUser",
+        "operationId": "TaskService_CreateTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/userUser"
+              "$ref": "#/definitions/taskTask"
             }
           },
           "default": {
@@ -96,12 +96,42 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/userUser"
+              "$ref": "#/definitions/taskTask"
             }
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
+        ]
+      },
+      "patch": {
+        "operationId": "TaskService_UpdateTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/taskTask"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/taskUpdateTaskRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TaskService"
         ]
       }
     }
@@ -134,26 +164,46 @@
         }
       }
     },
-    "userUser": {
+    "taskTask": {
       "type": "object",
       "properties": {
-        "lastName": {
+        "taskId": {
           "type": "string"
         },
-        "firstName": {
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
           "type": "string"
         },
-        "phone": {
+        "description": {
           "type": "string"
         },
-        "address": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
+        "time": {
+          "type": "string",
+          "format": "int64"
         },
         "userId": {
           "type": "string"
+        }
+      }
+    },
+    "taskUpdateTaskRequest": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "newName": {
+          "type": "string"
+        },
+        "newDescription": {
+          "type": "string"
+        },
+        "newTime": {
+          "type": "string",
+          "format": "int64"
         }
       }
     }
