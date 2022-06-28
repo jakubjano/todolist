@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"jakubjano/todolist/task/internal/auth"
 	"jakubjano/todolist/task/pkg/service"
 	"jakubjano/todolist/task/pkg/service/repository"
 	"net"
@@ -23,8 +24,8 @@ func main() {
 	//todo
 	// logger task service
 
-	viper.SetDefault("gateway.port", ":8181")
-	viper.SetDefault("http.address", ":8180")
+	viper.SetDefault("grpc.port", ":8181")
+	viper.SetDefault("gateway.port", ":8180")
 	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
 
 	//todo for future config files - can't panic here because config doesn't exist yet
@@ -35,7 +36,7 @@ func main() {
 		fmt.Printf("error config not found: %v \n", err)
 	}
 
-	gwPort := viper.GetString("gateway.port")
+	gwPort := viper.GetString("grpc.port")
 	ctx := context.Background()
 	key := option.WithCredentialsFile(viper.GetString("secret.path"))
 
@@ -57,6 +58,7 @@ func main() {
 
 	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionTasks))
 	taskService := service.NewTaskService(authClient, taskRepo)
+	tokenClient := auth.NewTokenClient(authClient)
 
 	lis, err := net.Listen("tcp", gwPort)
 	if err != nil {
@@ -66,7 +68,7 @@ func main() {
 	s := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_recovery.UnaryServerInterceptor(),
-			//tokenClient.CustomUnaryInterceptor(),
+			tokenClient.CustomUnaryInterceptor(),
 		),
 	)
 	v1.RegisterTaskServiceServer(s, taskService)
@@ -98,9 +100,9 @@ func main() {
 	}
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	fmt.Printf("starting http server at '%s'\n", viper.GetString("http.address"))
+	fmt.Printf("starting http server at '%s'\n", viper.GetString("gateway.port"))
 
-	err = http.ListenAndServe(viper.GetString("http.address"), mux)
+	err = http.ListenAndServe(viper.GetString("gateway.port"), mux)
 	if err != nil {
 		panic(err)
 	}
