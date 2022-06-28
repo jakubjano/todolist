@@ -36,7 +36,7 @@ func main() {
 		fmt.Printf("error config not found: %v \n", err)
 	}
 
-	gwPort := viper.GetString("grpc.port")
+	grpcPort := viper.GetString("grpc.port")
 	ctx := context.Background()
 	key := option.WithCredentialsFile(viper.GetString("secret.path"))
 
@@ -56,11 +56,17 @@ func main() {
 		panic(err)
 	}
 
-	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionTasks))
-	taskService := service.NewTaskService(authClient, taskRepo)
+	logger, err := service.NewLogger()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
+	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers))
+	taskService := service.NewTaskService(authClient, taskRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient)
 
-	lis, err := net.Listen("tcp", gwPort)
+	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +89,7 @@ func main() {
 
 	conn, err := grpc.DialContext(
 		context.Background(),
-		gwPort,
+		grpcPort,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
@@ -99,9 +105,10 @@ func main() {
 		panic(err)
 	}
 
+	// cron
+
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
 	fmt.Printf("starting http server at '%s'\n", viper.GetString("gateway.port"))
-
 	err = http.ListenAndServe(viper.GetString("gateway.port"), mux)
 	if err != nil {
 		panic(err)

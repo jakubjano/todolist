@@ -20,9 +20,9 @@ service TaskService {
     };
   }
 
-  rpc UpdateTask(UpdateTaskRequest) returns (Task){
+  rpc UpdateTask(Task) returns (Task){
     option (google.api.http) = {
-      patch: "/task"
+      put: "/task"
       body: "*"
     };
   }
@@ -49,12 +49,5 @@ message GetTaskRequest {
 
 message DeleteTaskRequest {
   string task_id = 1;
-}
-
-message UpdateTaskRequest {
-  string task_id = 1;
-  string new_name = 2;
-  string new_description = 3;
-  int64 new_time = 4;
 }
 

@@ -104,7 +104,7 @@
           "TaskService"
         ]
       },
-      "patch": {
+      "put": {
         "operationId": "TaskService_UpdateTask",
         "responses": {
           "200": {
@@ -126,7 +126,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/taskUpdateTaskRequest"
+              "$ref": "#/definitions/taskTask"
             }
           }
         ],
@@ -186,24 +186,6 @@
         },
         "userId": {
           "type": "string"
-        }
-      }
-    },
-    "taskUpdateTaskRequest": {
-      "type": "object",
-      "properties": {
-        "taskId": {
-          "type": "string"
-        },
-        "newName": {
-          "type": "string"
-        },
-        "newDescription": {
-          "type": "string"
-        },
-        "newTime": {
-          "type": "string",
-          "format": "int64"
         }
       }
     }
