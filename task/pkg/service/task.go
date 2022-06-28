@@ -33,7 +33,7 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 	//userCtx := ctx.Value("user").(*middleware.UserContext)
 	task, err := ts.taskRepo.Create(ctx, repository.TaskFromMsg(in))
 	if err != nil {
-		fmt.Printf("error creating task: %v", err)
+		fmt.Printf("error creating task: %v \n", err)
 		return &v1.Task{}, status.Error(http.StatusInternalServerError, err.Error())
 
 	}
@@ -104,7 +104,7 @@ func (ts *TaskService) DeleteTask(ctx context.Context, in *v1.DeleteTaskRequest)
 		fmt.Println("admin authorized")
 	case "user":
 		if taskCheck.UserID != userCtx.UserID {
-			fmt.Printf("unauthorized access\n")
+			return &emptypb.Empty{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
 		}
 	}
 	err = ts.taskRepo.Delete(ctx, in.TaskId)

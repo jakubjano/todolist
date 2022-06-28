@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	middleware "jakubjano/todolist/task/internal/auth"
-	"reflect"
 	"time"
 )
 
@@ -62,17 +61,14 @@ func (f *FSTask) Update(ctx context.Context, fields map[string]interface{}, docI
 			// doesn't work without type assertion
 			// probably caused by the interface{} type
 			if value.(int64) == 0 {
-				fmt.Println(value)
 				continue
 			}
 		case string:
 			if value == "" {
-				fmt.Println(value)
 				continue
 			}
 		default:
 			fmt.Printf("Some other type: %v \n", v)
-			fmt.Println(reflect.TypeOf(value))
 		}
 		// returns error if document with given id does not exist
 		_, err := f.fs.Doc(docID).Update(ctx, []firestore.Update{
