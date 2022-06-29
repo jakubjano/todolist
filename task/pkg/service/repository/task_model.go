@@ -7,6 +7,7 @@ import (
 const (
 	CollectionTasks = "tasks"
 	CollectionUsers = "users"
+	ContextUser     = "user"
 )
 
 type Task struct {

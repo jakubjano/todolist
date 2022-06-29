@@ -6,6 +6,7 @@ import (
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"jakubjano/todolist/user/pkg/service/repository"
 )
 
 type TokenClient struct {
@@ -60,6 +61,6 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 		Email:  data["email"].(string),
 		Role:   data["role"].(string),
 	}
-	newCtx := context.WithValue(ctx, "user", ctxUser)
+	newCtx := context.WithValue(ctx, repository.ContextUser, ctxUser)
 	return newCtx, nil
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -21,8 +22,12 @@ import (
 )
 
 func main() {
-	//todo
-	// logger task service
+
+	logger, err := service.NewLogger()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
 	viper.SetDefault("grpc.port", ":8181")
 	viper.SetDefault("gateway.port", ":8180")
@@ -31,9 +36,9 @@ func main() {
 	//todo for future config files - can't panic here because config doesn't exist yet
 	viper.AddConfigPath("$HOME/.appname")
 	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
+	err = viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("error config not found: %v \n", err)
+		logger.Warn("error finding config file, using default values", zap.Error(err))
 	}
 
 	grpcPort := viper.GetString("grpc.port")
@@ -55,12 +60,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	logger, err := service.NewLogger()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
 
 	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers))
 	taskService := service.NewTaskService(authClient, taskRepo, logger)
