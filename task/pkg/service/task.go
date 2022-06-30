@@ -31,7 +31,7 @@ func NewTaskService(authClient *auth.Client, taskRepo repository.FSTaskInterface
 }
 
 func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, error) {
-	userCtx := ctx.Value(repository.ContextUser).(*middleware.UserContext)
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := ts.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
@@ -47,7 +47,7 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 }
 
 func (ts *TaskService) GetTask(ctx context.Context, in *v1.GetTaskRequest) (*v1.Task, error) {
-	userCtx := ctx.Value(repository.ContextUser).(*middleware.UserContext)
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := ts.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
@@ -62,7 +62,7 @@ func (ts *TaskService) GetTask(ctx context.Context, in *v1.GetTaskRequest) (*v1.
 }
 
 func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.Task) (*v1.Task, error) {
-	userCtx := ctx.Value(repository.ContextUser).(*middleware.UserContext)
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := ts.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
@@ -78,7 +78,7 @@ func (ts *TaskService) UpdateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 }
 
 func (ts *TaskService) DeleteTask(ctx context.Context, in *v1.DeleteTaskRequest) (*emptypb.Empty, error) {
-	userCtx := ctx.Value(repository.ContextUser).(*middleware.UserContext)
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := ts.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),

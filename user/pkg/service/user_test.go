@@ -41,15 +41,15 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 	}{
 		// user role authorized, valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "id1",
 				Email:  "test@example.com",
-				Role:   repository.ContextUser,
+				Role:   middleware.ContextUser,
 			}),
 			in: &v1.GetUserRequest{UserId: "id1"},
 			ExpectedResult: &v1.User{
 				LastName:  "anon",
-				FirstName: repository.ContextUser,
+				FirstName: middleware.ContextUser,
 				Phone:     "09500600",
 				Address:   "ad1",
 				Email:     "test@example.com",
@@ -60,10 +60,10 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 
 		// user role unauthorized, valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "id2",
 				Email:  "test2@example.com",
-				Role:   repository.ContextUser,
+				Role:   middleware.ContextUser,
 			}),
 			in:             &v1.GetUserRequest{UserId: "idnot2"},
 			ExpectedResult: &v1.User{},
@@ -72,10 +72,10 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 
 		//admin role authorized invalid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "idadmin",
 				Email:  "jakub@test.com",
-				Role:   repository.ContextAdmin,
+				Role:   middleware.ContextAdmin,
 			}),
 			in:             &v1.GetUserRequest{UserId: ""},
 			ExpectedResult: &v1.User{},
@@ -84,14 +84,14 @@ func (s *ServiceUserTestSuite) TestGetUser() {
 
 		//admin role authorized valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "idadmin",
 				Email:  "jakub@test.com",
-				Role:   repository.ContextAdmin,
+				Role:   middleware.ContextAdmin,
 			}),
 			in: &v1.GetUserRequest{UserId: "id1"},
 			ExpectedResult: &v1.User{
-				LastName:  repository.ContextUser,
+				LastName:  middleware.ContextUser,
 				FirstName: "other",
 				Phone:     "09500600",
 				Address:   "ad1",
@@ -128,14 +128,14 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 	}{
 		// user role authorized valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "id1",
 				Email:  "user@test.com",
-				Role:   repository.ContextUser,
+				Role:   middleware.ContextUser,
 			}),
 			in: &v1.User{
 				LastName:  "test",
-				FirstName: repository.ContextUser,
+				FirstName: middleware.ContextUser,
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
@@ -143,7 +143,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 			},
 			ExpectedResult: &v1.User{
 				LastName:  "test",
-				FirstName: repository.ContextUser,
+				FirstName: middleware.ContextUser,
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
@@ -154,14 +154,14 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 
 		// admin role authorized valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "id1",
 				Email:  "admin@test.com",
-				Role:   repository.ContextAdmin,
+				Role:   middleware.ContextAdmin,
 			}),
 			in: &v1.User{
 				LastName:  "test",
-				FirstName: repository.ContextUser,
+				FirstName: middleware.ContextUser,
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
@@ -169,7 +169,7 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 			},
 			ExpectedResult: &v1.User{
 				LastName:  "test",
-				FirstName: repository.ContextUser,
+				FirstName: middleware.ContextUser,
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "user@test.com",
@@ -180,14 +180,14 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 
 		// admin role authorized invalid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "id1",
 				Email:  "admin@test.com",
-				Role:   repository.ContextAdmin,
+				Role:   middleware.ContextAdmin,
 			}),
 			in: &v1.User{
 				LastName:  "test",
-				FirstName: repository.ContextUser,
+				FirstName: middleware.ContextUser,
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "@@bad_email",
@@ -200,14 +200,14 @@ func (s *ServiceUserTestSuite) TestUpdateUser() {
 
 		// user role unauthorized valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "id1",
 				Email:  "user@test.com",
-				Role:   repository.ContextUser,
+				Role:   middleware.ContextUser,
 			}),
 			in: &v1.User{
 				LastName:  "test",
-				FirstName: repository.ContextUser,
+				FirstName: middleware.ContextUser,
 				Phone:     "123",
 				Address:   "a1",
 				Email:     "notuser@test.com",
@@ -252,10 +252,10 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 
 		// user trying to delete valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "id1",
 				Email:  "test@example.com",
-				Role:   repository.ContextUser,
+				Role:   middleware.ContextUser,
 			}),
 			in:            &v1.DeleteUserRequest{UserId: "id1"},
 			ExpectedError: status.Error(http.StatusUnauthorized, ErrUnauthorized.Error()),
@@ -263,10 +263,10 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 
 		// admin trying to delete valid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "idadmin",
 				Email:  "test@admin.com",
-				Role:   repository.ContextAdmin,
+				Role:   middleware.ContextAdmin,
 			}),
 			in:            &v1.DeleteUserRequest{UserId: "id1"},
 			ExpectedError: nil,
@@ -274,10 +274,10 @@ func (s *ServiceUserTestSuite) TestDeleteUser() {
 
 		// admin trying to delete invalid input
 		{
-			ctx: context.WithValue(ctx, repository.ContextUser, &middleware.UserContext{
+			ctx: context.WithValue(ctx, middleware.ContextUser, &middleware.UserContext{
 				UserID: "idadmin",
 				Email:  "test@admin.com",
-				Role:   repository.ContextAdmin,
+				Role:   middleware.ContextAdmin,
 			}),
 			in:            &v1.DeleteUserRequest{UserId: ""},
 			ExpectedError: nil,

@@ -33,7 +33,7 @@ func NewUserService(authClient AuthClientInterface, userRepo repository.FSUserIn
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, error) {
-	userCtx := ctx.Value(repository.ContextUser).(*middleware.UserContext)
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
@@ -41,9 +41,9 @@ func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, er
 		zap.String("updated_user_email", in.Email),
 	)
 	switch userCtx.Role {
-	case repository.ContextAdmin:
+	case middleware.ContextAdmin:
 		log.Info("Admin authorized")
-	case repository.ContextUser:
+	case middleware.ContextUser:
 		if userCtx.Email != in.Email {
 			log.Error(ErrUnauthorized.Error())
 			return &v1.User{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
@@ -64,7 +64,7 @@ func (s *UserService) UpdateUser(ctx context.Context, in *v1.User) (*v1.User, er
 }
 
 func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.User, error) {
-	userCtx := ctx.Value(repository.ContextUser).(*middleware.UserContext)
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
@@ -72,9 +72,9 @@ func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.U
 		zap.String("get_user_id", in.UserId),
 	)
 	switch userCtx.Role {
-	case repository.ContextAdmin:
+	case middleware.ContextAdmin:
 		log.Info("Admin authorized")
-	case repository.ContextUser:
+	case middleware.ContextUser:
 		if userCtx.UserID != in.UserId {
 			log.Error(ErrUnauthorized.Error())
 			return &v1.User{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
@@ -89,14 +89,14 @@ func (s *UserService) GetUser(ctx context.Context, in *v1.GetUserRequest) (*v1.U
 }
 
 func (s *UserService) DeleteUser(ctx context.Context, in *v1.DeleteUserRequest) (*emptypb.Empty, error) {
-	userCtx := ctx.Value(repository.ContextUser).(*middleware.UserContext)
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := s.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
 		zap.String("caller_role", userCtx.Role),
 		zap.String("delete_user_id", in.UserId),
 	)
-	if userCtx.Role != repository.ContextAdmin {
+	if userCtx.Role != middleware.ContextAdmin {
 		return &emptypb.Empty{}, status.Error(http.StatusUnauthorized, ErrUnauthorized.Error())
 	}
 	log.Info("Admin authorized")

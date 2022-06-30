@@ -4,8 +4,6 @@ import v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
 
 const (
 	CollectionUsers = "users"
-	ContextUser     = "user"
-	ContextAdmin    = "admin"
 )
 
 type User struct {
