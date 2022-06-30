@@ -39,3 +39,18 @@ func ToApi(task Task) *v1.Task {
 		UserId:      task.UserID,
 	}
 }
+
+func SliceToApi(tasks []Task) *v1.TaskSlice {
+	apiTasks := v1.TaskSlice{}.Tasks
+	for _, task := range tasks {
+		apiTasks = append(apiTasks, &v1.Task{
+			TaskId:      task.TaskID,
+			CreatedAt:   task.CreatedAt,
+			Name:        task.Name,
+			Description: task.Description,
+			Time:        task.Time,
+			UserId:      task.UserID,
+		})
+	}
+	return &v1.TaskSlice{Tasks: apiTasks}
+}

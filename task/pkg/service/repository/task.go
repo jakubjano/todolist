@@ -3,6 +3,7 @@ package repository
 import (
 	"cloud.google.com/go/firestore"
 	"context"
+	"google.golang.org/api/iterator"
 	"time"
 )
 
@@ -11,7 +12,8 @@ type FSTaskInterface interface {
 	Get(ctx context.Context, userID, taskID string) (Task, error)
 	Update(ctx context.Context, newTask Task, userID, taskID string) (Task, error)
 	Delete(ctx context.Context, userID, taskID string) error
-	//Update(ctx context.Context, newTask Task, docID string) (Task, error)
+	GetLastN(ctx context.Context, userID string, n int32) (tasks []Task, err error)
+	GetExpired(ctx context.Context, userID string) (expiredTasks []Task, err error)
 }
 
 type FSTask struct {
@@ -64,4 +66,44 @@ func (f *FSTask) Delete(ctx context.Context, userID, taskID string) error {
 		return err
 	}
 	return nil
+}
+
+func (f *FSTask) GetLastN(ctx context.Context, userID string, n int32) (tasks []Task, err error) {
+	taskQuery := f.fs.Doc(userID).Collection(CollectionTasks).OrderBy("createdAt", firestore.Desc).Limit(int(n)).Documents(ctx)
+	for {
+		doc, err := taskQuery.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []Task{{}}, err
+		}
+		task := Task{}
+		err = doc.DataTo(&task)
+		if err != nil {
+			return []Task{{}}, err
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
+
+func (f *FSTask) GetExpired(ctx context.Context, userID string) (expiredTasks []Task, err error) {
+	taskQuery := f.fs.Doc(userID).Collection(CollectionTasks).Where("time", "<=", time.Now().Unix()).Documents(ctx)
+	for {
+		taskDoc, err := taskQuery.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []Task{{}}, err
+		}
+		expiredTask := Task{}
+		err = taskDoc.DataTo(&expiredTask)
+		if err != nil {
+			return []Task{{}}, nil
+		}
+		expiredTasks = append(expiredTasks, expiredTask)
+	}
+	return expiredTasks, nil
 }

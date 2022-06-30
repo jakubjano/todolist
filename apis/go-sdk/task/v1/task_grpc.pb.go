@@ -27,6 +27,8 @@ type TaskServiceClient interface {
 	GetTask(ctx context.Context, in *GetTaskRequest, opts ...grpc.CallOption) (*Task, error)
 	UpdateTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*Task, error)
 	DeleteTask(ctx context.Context, in *DeleteTaskRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetLastN(ctx context.Context, in *GetLastNRequest, opts ...grpc.CallOption) (*TaskSlice, error)
+	GetExpired(ctx context.Context, in *GetExpiredRequest, opts ...grpc.CallOption) (*TaskSlice, error)
 }
 
 type taskServiceClient struct {
@@ -73,6 +75,24 @@ func (c *taskServiceClient) DeleteTask(ctx context.Context, in *DeleteTaskReques
 	return out, nil
 }
 
+func (c *taskServiceClient) GetLastN(ctx context.Context, in *GetLastNRequest, opts ...grpc.CallOption) (*TaskSlice, error) {
+	out := new(TaskSlice)
+	err := c.cc.Invoke(ctx, "/task.TaskService/GetLastN", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) GetExpired(ctx context.Context, in *GetExpiredRequest, opts ...grpc.CallOption) (*TaskSlice, error) {
+	out := new(TaskSlice)
+	err := c.cc.Invoke(ctx, "/task.TaskService/GetExpired", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskServiceServer is the server API for TaskService service.
 // All implementations must embed UnimplementedTaskServiceServer
 // for forward compatibility
@@ -81,6 +101,8 @@ type TaskServiceServer interface {
 	GetTask(context.Context, *GetTaskRequest) (*Task, error)
 	UpdateTask(context.Context, *Task) (*Task, error)
 	DeleteTask(context.Context, *DeleteTaskRequest) (*empty.Empty, error)
+	GetLastN(context.Context, *GetLastNRequest) (*TaskSlice, error)
+	GetExpired(context.Context, *GetExpiredRequest) (*TaskSlice, error)
 	mustEmbedUnimplementedTaskServiceServer()
 }
 
@@ -99,6 +121,12 @@ func (UnimplementedTaskServiceServer) UpdateTask(context.Context, *Task) (*Task,
 }
 func (UnimplementedTaskServiceServer) DeleteTask(context.Context, *DeleteTaskRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTask not implemented")
+}
+func (UnimplementedTaskServiceServer) GetLastN(context.Context, *GetLastNRequest) (*TaskSlice, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLastN not implemented")
+}
+func (UnimplementedTaskServiceServer) GetExpired(context.Context, *GetExpiredRequest) (*TaskSlice, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetExpired not implemented")
 }
 func (UnimplementedTaskServiceServer) mustEmbedUnimplementedTaskServiceServer() {}
 
@@ -185,6 +213,42 @@ func _TaskService_DeleteTask_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TaskService_GetLastN_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLastNRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).GetLastN(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/GetLastN",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).GetLastN(ctx, req.(*GetLastNRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_GetExpired_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetExpiredRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).GetExpired(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/GetExpired",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).GetExpired(ctx, req.(*GetExpiredRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TaskService_ServiceDesc is the grpc.ServiceDesc for TaskService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -207,6 +271,14 @@ var TaskService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTask",
 			Handler:    _TaskService_DeleteTask_Handler,
+		},
+		{
+			MethodName: "GetLastN",
+			Handler:    _TaskService_GetLastN_Handler,
+		},
+		{
+			MethodName: "GetExpired",
+			Handler:    _TaskService_GetExpired_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
