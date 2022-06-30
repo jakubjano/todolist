@@ -94,30 +94,30 @@ func (ts *TaskService) DeleteTask(ctx context.Context, in *v1.DeleteTaskRequest)
 }
 
 //todo define services in proto
-func (ts *TaskService) GetLastN(ctx context.Context, in *v1.GetLastNRequest) (*v1.TaskSlice, error) {
+func (ts *TaskService) GetLastN(ctx context.Context, in *v1.GetLastNRequest) (*v1.TaskList, error) {
 	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := ts.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
 	)
-	tasks, err := ts.taskRepo.GetLastN(ctx, in.UserId, in.N)
+	tasks, err := ts.taskRepo.GetLastN(ctx, userCtx.UserID, in.N)
 	if err != nil {
 		log.Error(err.Error())
-		return &v1.TaskSlice{Tasks: nil}, err
+		return &v1.TaskList{Tasks: nil}, err
 	}
 	return repository.SliceToApi(tasks), nil
 }
 
-func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest) (*v1.TaskSlice, error) {
+func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest) (*v1.TaskList, error) {
 	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := ts.logger.With(
 		zap.String("caller_email", userCtx.Email),
 		zap.String("caller_id", userCtx.UserID),
 	)
-	tasks, err := ts.taskRepo.GetExpired(ctx, in.UserId)
+	tasks, err := ts.taskRepo.GetExpired(ctx, userCtx.UserID)
 	if err != nil {
 		log.Error(err.Error())
-		return &v1.TaskSlice{Tasks: nil}, err
+		return &v1.TaskList{Tasks: nil}, err
 	}
 	return repository.SliceToApi(tasks), nil
 }

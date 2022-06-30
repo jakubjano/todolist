@@ -27,8 +27,8 @@ type TaskServiceClient interface {
 	GetTask(ctx context.Context, in *GetTaskRequest, opts ...grpc.CallOption) (*Task, error)
 	UpdateTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*Task, error)
 	DeleteTask(ctx context.Context, in *DeleteTaskRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	GetLastN(ctx context.Context, in *GetLastNRequest, opts ...grpc.CallOption) (*TaskSlice, error)
-	GetExpired(ctx context.Context, in *GetExpiredRequest, opts ...grpc.CallOption) (*TaskSlice, error)
+	GetLastN(ctx context.Context, in *GetLastNRequest, opts ...grpc.CallOption) (*TaskList, error)
+	GetExpired(ctx context.Context, in *GetExpiredRequest, opts ...grpc.CallOption) (*TaskList, error)
 }
 
 type taskServiceClient struct {
@@ -75,8 +75,8 @@ func (c *taskServiceClient) DeleteTask(ctx context.Context, in *DeleteTaskReques
 	return out, nil
 }
 
-func (c *taskServiceClient) GetLastN(ctx context.Context, in *GetLastNRequest, opts ...grpc.CallOption) (*TaskSlice, error) {
-	out := new(TaskSlice)
+func (c *taskServiceClient) GetLastN(ctx context.Context, in *GetLastNRequest, opts ...grpc.CallOption) (*TaskList, error) {
+	out := new(TaskList)
 	err := c.cc.Invoke(ctx, "/task.TaskService/GetLastN", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -84,8 +84,8 @@ func (c *taskServiceClient) GetLastN(ctx context.Context, in *GetLastNRequest, o
 	return out, nil
 }
 
-func (c *taskServiceClient) GetExpired(ctx context.Context, in *GetExpiredRequest, opts ...grpc.CallOption) (*TaskSlice, error) {
-	out := new(TaskSlice)
+func (c *taskServiceClient) GetExpired(ctx context.Context, in *GetExpiredRequest, opts ...grpc.CallOption) (*TaskList, error) {
+	out := new(TaskList)
 	err := c.cc.Invoke(ctx, "/task.TaskService/GetExpired", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -101,8 +101,8 @@ type TaskServiceServer interface {
 	GetTask(context.Context, *GetTaskRequest) (*Task, error)
 	UpdateTask(context.Context, *Task) (*Task, error)
 	DeleteTask(context.Context, *DeleteTaskRequest) (*empty.Empty, error)
-	GetLastN(context.Context, *GetLastNRequest) (*TaskSlice, error)
-	GetExpired(context.Context, *GetExpiredRequest) (*TaskSlice, error)
+	GetLastN(context.Context, *GetLastNRequest) (*TaskList, error)
+	GetExpired(context.Context, *GetExpiredRequest) (*TaskList, error)
 	mustEmbedUnimplementedTaskServiceServer()
 }
 
@@ -122,10 +122,10 @@ func (UnimplementedTaskServiceServer) UpdateTask(context.Context, *Task) (*Task,
 func (UnimplementedTaskServiceServer) DeleteTask(context.Context, *DeleteTaskRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTask not implemented")
 }
-func (UnimplementedTaskServiceServer) GetLastN(context.Context, *GetLastNRequest) (*TaskSlice, error) {
+func (UnimplementedTaskServiceServer) GetLastN(context.Context, *GetLastNRequest) (*TaskList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLastN not implemented")
 }
-func (UnimplementedTaskServiceServer) GetExpired(context.Context, *GetExpiredRequest) (*TaskSlice, error) {
+func (UnimplementedTaskServiceServer) GetExpired(context.Context, *GetExpiredRequest) (*TaskList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetExpired not implemented")
 }
 func (UnimplementedTaskServiceServer) mustEmbedUnimplementedTaskServiceServer() {}

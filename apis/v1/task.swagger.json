@@ -142,7 +142,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/taskTaskSlice"
+              "$ref": "#/definitions/taskTaskList"
             }
           },
           "default": {
@@ -152,14 +152,6 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
         "tags": [
           "TaskService"
         ]
@@ -172,7 +164,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/taskTaskSlice"
+              "$ref": "#/definitions/taskTaskList"
             }
           },
           "default": {
@@ -189,12 +181,6 @@
             "required": false,
             "type": "integer",
             "format": "int32"
-          },
-          {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string"
           }
         ],
         "tags": [
@@ -256,7 +242,7 @@
         }
       }
     },
-    "taskTaskSlice": {
+    "taskTaskList": {
       "type": "object",
       "properties": {
         "tasks": {
