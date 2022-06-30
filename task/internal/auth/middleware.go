@@ -3,25 +3,23 @@ package auth
 import (
 	"context"
 	"firebase.google.com/go/auth"
+	"fmt"
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 const (
-	ContextUser  = "user"
-	ContextAdmin = "admin"
+	ContextUser = "user"
 )
 
 type TokenClient struct {
 	authClient *auth.Client
-	logger     *zap.Logger
 }
 
-func NewTokenClient(authClient *auth.Client, logger *zap.Logger) *TokenClient {
+func NewTokenClient(authClient *auth.Client) *TokenClient {
 	return &TokenClient{
 		authClient: authClient,
-		logger:     logger}
+	}
 }
 
 type UserContext struct {
@@ -38,7 +36,7 @@ func (t *TokenClient) CustomUnaryInterceptor() grpc.UnaryServerInterceptor {
 			// token can't be parsed without complete/authorized signature
 			// so when error occurs and the request is intercepted there are no data
 			// of the user that tried and failed to authorize
-			t.logger.Error(err.Error())
+			fmt.Printf("error authorizing request: %v", err)
 			return nil, err
 		}
 		return handler(newCtx, req)
@@ -49,14 +47,14 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 	// AuthFromMD searches for Authorization header from request that is carried by context
 	jwt, err := grpcAuth.AuthFromMD(ctx, "bearer")
 	if err != nil {
-		t.logger.Error(err.Error())
+		fmt.Printf("error obtaining auth header from metadata: %v", err)
 		return nil, err
 	}
 	// VerifyIDToken searches for projectID in key automatically when client was initialized with service account
 	// credentials
 	token, err := t.authClient.VerifyIDToken(ctx, jwt)
 	if err != nil {
-		t.logger.Error(err.Error())
+		fmt.Printf("error verifying token: %v", err)
 		return nil, err
 	}
 	data := token.Claims

@@ -9,10 +9,12 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"jakubjano/todolist/task/internal/auth"
 	"jakubjano/todolist/task/pkg/service"
 	"jakubjano/todolist/task/pkg/service/repository"
 	"net"
@@ -20,22 +22,26 @@ import (
 )
 
 func main() {
-	//todo
-	// logger task service
 
-	viper.SetDefault("gateway.port", ":8181")
-	viper.SetDefault("http.address", ":8180")
+	logger, err := service.NewLogger()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
+	viper.SetDefault("grpc.port", ":8181")
+	viper.SetDefault("gateway.port", ":8180")
 	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
 
 	//todo for future config files - can't panic here because config doesn't exist yet
 	viper.AddConfigPath("$HOME/.appname")
 	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
+	err = viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("error config not found: %v \n", err)
+		logger.Warn("error finding config file, using default values", zap.Error(err))
 	}
 
-	gwPort := viper.GetString("gateway.port")
+	grpcPort := viper.GetString("grpc.port")
 	ctx := context.Background()
 	key := option.WithCredentialsFile(viper.GetString("secret.path"))
 
@@ -55,10 +61,11 @@ func main() {
 		panic(err)
 	}
 
-	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionTasks))
-	taskService := service.NewTaskService(authClient, taskRepo)
+	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers))
+	taskService := service.NewTaskService(authClient, taskRepo, logger)
+	tokenClient := auth.NewTokenClient(authClient)
 
-	lis, err := net.Listen("tcp", gwPort)
+	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		panic(err)
 	}
@@ -66,7 +73,7 @@ func main() {
 	s := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_recovery.UnaryServerInterceptor(),
-			//tokenClient.CustomUnaryInterceptor(),
+			tokenClient.CustomUnaryInterceptor(),
 		),
 	)
 	v1.RegisterTaskServiceServer(s, taskService)
@@ -81,7 +88,7 @@ func main() {
 
 	conn, err := grpc.DialContext(
 		context.Background(),
-		gwPort,
+		grpcPort,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
@@ -97,10 +104,11 @@ func main() {
 		panic(err)
 	}
 
-	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	fmt.Printf("starting http server at '%s'\n", viper.GetString("http.address"))
+	// cron
 
-	err = http.ListenAndServe(viper.GetString("http.address"), mux)
+	// Start HTTP server (and proxy calls to gRPC server endpoint)
+	fmt.Printf("starting http server at '%s'\n", viper.GetString("gateway.port"))
+	err = http.ListenAndServe(viper.GetString("gateway.port"), mux)
 	if err != nil {
 		panic(err)
 	}
