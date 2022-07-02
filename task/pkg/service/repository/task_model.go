@@ -18,6 +18,16 @@ type Task struct {
 	TaskID      string `firestore:"taskID"`
 }
 
+// User type redefined in the task microservice to maintain its independence on the user microservice
+type User struct {
+	UserID    string `firestore:"userID"`
+	Email     string `firestore:"email"`
+	FirstName string `firestore:"firstName"`
+	LastName  string `firestore:"lastName"`
+	Phone     string `firestore:"phone"`
+	Address   string `firestore:"address"`
+}
+
 func TaskFromMsg(msg *v1.Task) Task {
 	return Task{
 		CreatedAt:   msg.CreatedAt,
@@ -40,8 +50,8 @@ func ToApi(task Task) *v1.Task {
 	}
 }
 
-func SliceToApi(tasks []Task) *v1.TaskList {
-	apiTasks := []*v1.Task{{}}
+func SliceToApi(tasks []Task, len int) *v1.TaskList {
+	apiTasks := make([]*v1.Task, len)
 	for _, task := range tasks {
 		apiTasks = append(apiTasks, &v1.Task{
 			TaskId:      task.TaskID,

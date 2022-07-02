@@ -93,7 +93,6 @@ func (ts *TaskService) DeleteTask(ctx context.Context, in *v1.DeleteTaskRequest)
 	return &emptypb.Empty{}, nil
 }
 
-//todo define services in proto
 func (ts *TaskService) GetLastN(ctx context.Context, in *v1.GetLastNRequest) (*v1.TaskList, error) {
 	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
 	log := ts.logger.With(
@@ -105,7 +104,7 @@ func (ts *TaskService) GetLastN(ctx context.Context, in *v1.GetLastNRequest) (*v
 		log.Error(err.Error())
 		return &v1.TaskList{Tasks: nil}, err
 	}
-	return repository.SliceToApi(tasks), nil
+	return repository.SliceToApi(tasks, len(tasks)), nil
 }
 
 func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest) (*v1.TaskList, error) {
@@ -119,5 +118,5 @@ func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest)
 		log.Error(err.Error())
 		return &v1.TaskList{Tasks: nil}, err
 	}
-	return repository.SliceToApi(tasks), nil
+	return repository.SliceToApi(tasks, len(tasks)), nil
 }
