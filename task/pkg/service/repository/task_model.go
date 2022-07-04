@@ -7,15 +7,18 @@ import (
 const (
 	CollectionTasks = "tasks"
 	CollectionUsers = "users"
+	TaskList        = "task_list"
 )
 
 type Task struct {
-	CreatedAt   int64  `firestore:"createdAt"`
-	Name        string `firestore:"name"`
-	Description string `firestore:"description"`
-	UserID      string `firestore:"userID"`
-	Time        int64  `firestore:"time"`
-	TaskID      string `firestore:"taskID"`
+	CreatedAt    int64  `firestore:"createdAt"`
+	Name         string `firestore:"name"`
+	Description  string `firestore:"description"`
+	UserID       string `firestore:"userID"`
+	UserEmail    string `firestore:"email"`
+	Time         int64  `firestore:"time"`
+	TaskID       string `firestore:"taskID"`
+	ReminderSent bool   `firestore:"reminderSent"`
 }
 
 // User type redefined in the task microservice to maintain its independence on the user microservice
@@ -36,6 +39,7 @@ func TaskFromMsg(msg *v1.Task) Task {
 		UserID:      msg.UserId,
 		Time:        msg.Time,
 		TaskID:      msg.TaskId,
+		UserEmail:   msg.UserEmail,
 	}
 }
 
@@ -47,11 +51,12 @@ func ToApi(task Task) *v1.Task {
 		Description: task.Description,
 		Time:        task.Time,
 		UserId:      task.UserID,
+		UserEmail:   task.UserEmail,
 	}
 }
 
-func SliceToApi(tasks []Task, len int) *v1.TaskList {
-	apiTasks := make([]*v1.Task, len)
+func SliceToApi(tasks []Task) *v1.TaskList {
+	apiTasks := make([]*v1.Task, len(tasks))
 	for _, task := range tasks {
 		apiTasks = append(apiTasks, &v1.Task{
 			TaskId:      task.TaskID,

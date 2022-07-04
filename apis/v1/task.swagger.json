@@ -239,6 +239,9 @@
         },
         "userId": {
           "type": "string"
+        },
+        "userEmail": {
+          "type": "string"
         }
       }
     },

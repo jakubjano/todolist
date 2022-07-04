@@ -14,25 +14,33 @@ type FSTaskInterface interface {
 	Delete(ctx context.Context, userID, taskID string) error
 	GetLastN(ctx context.Context, userID string, n int32) (tasks []Task, err error)
 	GetExpired(ctx context.Context, userID string) (expiredTasks []Task, err error)
-	SearchForExpiringTasks(ctx context.Context) (map[string][]string, error)
+	SearchForExpiringTasks(ctx context.Context) (map[string][]Task, error)
 }
 
 type FSTask struct {
-	fs *firestore.CollectionRef
+	fs     *firestore.CollectionRef
+	client *firestore.Client
 }
 
-func NewFSTask(fs *firestore.CollectionRef) *FSTask {
+func NewFSTask(fs *firestore.CollectionRef, client *firestore.Client) *FSTask {
 	return &FSTask{
-		fs: fs,
+		fs:     fs,
+		client: client,
 	}
 }
 
 func (f *FSTask) Create(ctx context.Context, userID string, in Task) (Task, error) {
+	// sub collection logic
 	docRef := f.fs.Doc(userID).Collection(CollectionTasks).NewDoc()
 	in.TaskID = docRef.ID
 	in.CreatedAt = time.Now().Unix()
 	//todo validation for time
 	_, err := docRef.Set(ctx, in)
+	if err != nil {
+		return Task{}, err
+	}
+	// redundant data for optimization
+	_, err = f.client.Collection(TaskList).Doc(docRef.ID).Set(ctx, in)
 	if err != nil {
 		return Task{}, err
 	}
@@ -58,11 +66,21 @@ func (f *FSTask) Update(ctx context.Context, newTask Task, userID, taskID string
 	if err != nil {
 		return Task{}, err
 	}
+	// redundant data for optimization
+	_, err = f.client.Collection(TaskList).Doc(taskID).Set(ctx, newTask)
+	if err != nil {
+		return Task{}, err
+	}
 	return newTask, nil
 }
 
 func (f *FSTask) Delete(ctx context.Context, userID, taskID string) error {
 	_, err := f.fs.Doc(userID).Collection(CollectionTasks).Doc(taskID).Delete(ctx)
+	if err != nil {
+		return err
+	}
+	// redundant operation for optimization
+	_, err = f.client.Collection(TaskList).Doc(taskID).Delete(ctx)
 	if err != nil {
 		return err
 	}
@@ -109,39 +127,22 @@ func (f *FSTask) GetExpired(ctx context.Context, userID string) (expiredTasks []
 	return expiredTasks, nil
 }
 
-func (f *FSTask) SearchForExpiringTasks(ctx context.Context) (map[string][]string, error) {
-	// todo more tasks that are expiring
-	// iterate through all the users in user collection
-	toRemind := make(map[string][]string)
-	userDocs, err := f.fs.Documents(ctx).GetAll()
+func (f *FSTask) SearchForExpiringTasks(ctx context.Context) (map[string][]Task, error) {
+	toRemind := make(map[string][]Task)
+	taskDocs, err := f.client.Collection(TaskList).
+		Where("reminderSent", "==", false).
+		Where("time", ">", time.Now().Unix()).
+		Where("time", "<", time.Now().Add(time.Minute*5).Unix()).Documents(ctx).GetAll()
 	if err != nil {
 		return nil, err
 	}
-
-	for _, userDoc := range userDocs {
-		user := User{}
-		err := userDoc.DataTo(&user)
+	for _, taskDoc := range taskDocs {
+		task := Task{}
+		err := taskDoc.DataTo(&task)
 		if err != nil {
 			return nil, err
 		}
-		// lower and upper interval to avoid sending reminders to the same user more than once
-		timeBuffLower := time.Now().Unix() + 300
-		timeBuffUpper := time.Now().Unix() + 269 // inconsistent cron runs -> needs slightly longer interval
-		taskDocs, err := userDoc.Ref.Collection(CollectionTasks).
-			Where("time", ">", time.Now().Unix()).
-			Where("time", "<=", timeBuffLower).
-			Where("time", ">", timeBuffUpper).Documents(ctx).GetAll()
-		if err != nil {
-			return nil, err
-		}
-		for _, taskDoc := range taskDocs {
-			task := Task{}
-			err := taskDoc.DataTo(&task)
-			if err != nil {
-				return nil, err
-			}
-			toRemind[user.Email] = append(toRemind[user.Email], task.Name)
-		}
+		toRemind[task.UserEmail] = append(toRemind[task.UserEmail], task)
 	}
 	return toRemind, nil
 }

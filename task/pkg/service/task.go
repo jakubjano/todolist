@@ -104,7 +104,7 @@ func (ts *TaskService) GetLastN(ctx context.Context, in *v1.GetLastNRequest) (*v
 		log.Error(err.Error())
 		return &v1.TaskList{Tasks: nil}, err
 	}
-	return repository.SliceToApi(tasks, len(tasks)), nil
+	return repository.SliceToApi(tasks), nil
 }
 
 func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest) (*v1.TaskList, error) {
@@ -118,5 +118,5 @@ func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest)
 		log.Error(err.Error())
 		return &v1.TaskList{Tasks: nil}, err
 	}
-	return repository.SliceToApi(tasks, len(tasks)), nil
+	return repository.SliceToApi(tasks), nil
 }

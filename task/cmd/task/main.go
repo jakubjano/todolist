@@ -65,7 +65,7 @@ func main() {
 		panic(err)
 	}
 
-	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers))
+	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers), client)
 	taskService := service.NewTaskService(authClient, taskRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient)
 
@@ -114,7 +114,7 @@ func main() {
 	reminder := service.NewReminder(taskRepo, logger, emailAuth)
 	c := cron.New()
 	c.AddFunc("@every 30s", func() {
-		err := reminder.SendEmail(ctx, viper.GetString("host"),
+		_, err := reminder.RemindUserViaEmail(ctx, viper.GetString("host"),
 			viper.GetString("smtp_port"),
 			viper.GetString("from"))
 		if err != nil {

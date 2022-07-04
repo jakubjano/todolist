@@ -5,15 +5,7 @@ import (
 	"go.uber.org/zap"
 	"jakubjano/todolist/task/pkg/service/repository"
 	"net/smtp"
-	"strings"
 )
-
-// get all tasks from the database
-// query each user's tasks and get ones approaching deadline
-// get user's ID and ID of the task that's about to expire
-// log this information
-// email those users
-// automate via cron
 
 type Reminder struct {
 	taskRepo  repository.FSTaskInterface
@@ -29,31 +21,41 @@ func NewReminder(taskRepo repository.FSTaskInterface, logger *zap.Logger, emailA
 	}
 }
 
-func (r *Reminder) SendEmail(ctx context.Context, host, port, from string) error {
-	//todo don't send reminders to the same user every 30 seconds
-	// more reliable solution than interval cutting needs more data than email and task name
-	// -> pass whole user and task into a nested map in repository.SearchForExpiredTasks and return more data(i.e ids) ?
-	// -> then return ids of sent reminders and check them in the next run of cron
+// RemindUserViaEmail checks if there are any reminders to send out to users
+// then iterates through each task and sends it via smtp to the corresponding email address with a prebuilt message
+// after the reminders are sent, RemindUserViaEmail flags the tasks with boolean and updates the database
+func (r *Reminder) RemindUserViaEmail(ctx context.Context, host, port, from string) (map[string][]repository.Task, error) {
+	sentReminders := make(map[string][]repository.Task)
 	reminders, err := r.taskRepo.SearchForExpiringTasks(ctx)
 	if err != nil {
-		return err
+		r.logger.Error(err.Error())
+		return sentReminders, err
 	}
-	// temporary log
 	if len(reminders) < 1 {
 		r.logger.Info("No expiring tasks")
+		return sentReminders, nil
 	}
-	for user, tasks := range reminders {
-		tasksJoined := strings.Join(tasks, "\n")
-		log := r.logger.With(
-			zap.String("user", user),
-			zap.String("task_names", tasksJoined),
-		)
-		message := []byte("Some of your tasks are expiring soon: " + tasksJoined)
-		err = smtp.SendMail(host+port, r.emailAuth, from, []string{user}, message)
-		if err != nil {
-			return err
+	for email, tasks := range reminders {
+		for i, task := range tasks {
+			log := r.logger.With(
+				zap.String("email", email),
+				zap.String("task", task.Name),
+			)
+			message := []byte("Your task is expiring soon: " + task.Name)
+			err = smtp.SendMail(host+port, r.emailAuth, from, []string{email}, message)
+			if err != nil {
+				log.Error(err.Error())
+				return sentReminders, err
+			}
+			tasks[i].ReminderSent = true
+			updatedTask, err := r.taskRepo.Update(ctx, tasks[i], tasks[i].UserID, tasks[i].TaskID)
+			if err != nil {
+				log.Error(err.Error())
+			}
+			sentReminders[email] = append(sentReminders[email], updatedTask)
+			log.Info("reminder sent")
 		}
-		log.Info("reminder sent")
+
 	}
-	return nil
+	return sentReminders, nil
 }
