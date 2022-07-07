@@ -34,7 +34,7 @@ func (r *Reminder) RemindUserViaEmail(ctx context.Context, host, port, from stri
 		return err
 	}
 	if len(reminders) < 1 {
-		return ErrNoExpiringTasks
+		return nil
 	}
 	batch := r.fs.Batch()
 	for email, tasks := range reminders {
@@ -55,11 +55,6 @@ func (r *Reminder) RemindUserViaEmail(ctx context.Context, host, port, from stri
 			batch.Set(r.fs.Collection(repository.TaskList).Doc(task.TaskID), map[string]interface{}{
 				"reminderSent": true,
 			}, firestore.MergeAll)
-			//update users->tasks
-			batch.Set(r.fs.Collection(repository.CollectionUsers).Doc(task.UserID).Collection(repository.CollectionTasks).Doc(task.TaskID),
-				map[string]interface{}{
-					"reminderSent": true,
-				}, firestore.MergeAll)
 		}
 	}
 	_, err = batch.Commit(ctx)

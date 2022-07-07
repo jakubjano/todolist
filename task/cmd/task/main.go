@@ -113,12 +113,7 @@ func main() {
 			viper.GetString("smtp_port"),
 			viper.GetString("from"))
 		if err != nil {
-			switch err {
-			case service.ErrNoExpiringTasks:
-				logger.Error(err.Error())
-			default:
-				panic(err)
-			}
+			panic(err)
 		}
 	},
 	)
