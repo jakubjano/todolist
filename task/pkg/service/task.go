@@ -37,7 +37,8 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 		zap.String("caller_id", userCtx.UserID),
 	)
 	in.UserId = userCtx.UserID
-	task, err := ts.taskRepo.Create(ctx, userCtx.UserID, repository.TaskFromMsg(in))
+	in.UserEmail = userCtx.Email
+	task, err := ts.taskRepo.Create(ctx, repository.TaskFromMsg(in))
 	if err != nil {
 		log.Error(err.Error(), zap.String("task_id", task.TaskID))
 		return &v1.Task{}, status.Error(http.StatusInternalServerError, err.Error())

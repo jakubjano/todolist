@@ -8,7 +8,7 @@ import (
 )
 
 type FSTaskInterface interface {
-	Create(ctx context.Context, userID string, in Task) (Task, error)
+	Create(ctx context.Context, in Task) (Task, error)
 	Get(ctx context.Context, userID, taskID string) (Task, error)
 	Update(ctx context.Context, newTask Task, userID, taskID string) (Task, error)
 	Delete(ctx context.Context, userID, taskID string) error
@@ -29,9 +29,9 @@ func NewFSTask(fs *firestore.CollectionRef, client *firestore.Client) *FSTask {
 	}
 }
 
-func (f *FSTask) Create(ctx context.Context, userID string, in Task) (Task, error) {
+func (f *FSTask) Create(ctx context.Context, in Task) (Task, error) {
 	// sub collection logic
-	docRef := f.fs.Doc(userID).Collection(CollectionTasks).NewDoc()
+	docRef := f.fs.Doc(in.UserID).Collection(CollectionTasks).NewDoc()
 	in.TaskID = docRef.ID
 	in.CreatedAt = time.Now().Unix()
 	//todo validation for time

@@ -86,7 +86,7 @@ func (s *RepoUserTestSuite) SetupTest() {
 	}
 
 	for _, user := range users {
-		docRef := s.client.Collection("users").Doc(user.UserID) //todo naming convention -> collections with lowercase plural
+		docRef := s.client.Collection("users").Doc(user.UserID)
 		batchCreate.Set(docRef, user)
 	}
 	_, err := batchCreate.Commit(ctx)
@@ -104,8 +104,6 @@ func (s *RepoUserTestSuite) TearDownTest() {
 	}
 	_, err = batch.Commit(ctx)
 	s.NoError(err)
-
-	//todo check cli command for collection deletion
 }
 
 func (s *RepoUserTestSuite) TearDownSuite() {

@@ -31,11 +31,6 @@ func main() {
 	}
 	defer logger.Sync()
 
-	viper.SetDefault("grpc.port", ":8181")
-	viper.SetDefault("gateway.port", ":8180")
-	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
-
-	//todo for future config files - can't panic here because config doesn't exist yet
 	viper.SetConfigName("task_config")
 	viper.SetConfigType("json")
 	viper.AddConfigPath("./secret")
@@ -111,15 +106,19 @@ func main() {
 	// cron reminders
 	emailAuth := smtp.PlainAuth("", viper.GetString("username"), viper.GetString("password"),
 		viper.GetString("host"))
-	reminder := service.NewReminder(taskRepo, logger, emailAuth)
+	reminder := service.NewReminder(taskRepo, logger, emailAuth, client)
 	c := cron.New()
 	c.AddFunc("@every 30s", func() {
-		_, err := reminder.RemindUserViaEmail(ctx, viper.GetString("host"),
+		err := reminder.RemindUserViaEmail(ctx, viper.GetString("host"),
 			viper.GetString("smtp_port"),
 			viper.GetString("from"))
 		if err != nil {
-			logger.Error(err.Error())
-			panic(err)
+			switch err {
+			case service.ErrNoExpiringTasks:
+				logger.Error(err.Error())
+			default:
+				panic(err)
+			}
 		}
 	},
 	)
