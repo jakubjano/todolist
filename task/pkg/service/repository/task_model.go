@@ -57,15 +57,16 @@ func ToApi(task Task) *v1.Task {
 
 func SliceToApi(tasks []Task) *v1.TaskList {
 	apiTasks := make([]*v1.Task, len(tasks))
-	for _, task := range tasks {
-		apiTasks = append(apiTasks, &v1.Task{
+	for i, task := range tasks {
+		apiTasks[i] = &v1.Task{
 			TaskId:      task.TaskID,
 			CreatedAt:   task.CreatedAt,
 			Name:        task.Name,
 			Description: task.Description,
 			Time:        task.Time,
 			UserId:      task.UserID,
-		})
+			UserEmail:   task.UserEmail,
+		}
 	}
 	return &v1.TaskList{Tasks: apiTasks}
 }

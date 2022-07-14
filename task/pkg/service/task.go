@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"firebase.google.com/go/auth"
+	"fmt"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
@@ -12,21 +12,16 @@ import (
 	"net/http"
 )
 
-//type TaskClientInterface interface {
-//}
-
 type TaskService struct {
 	v1.UnimplementedTaskServiceServer
-	authClient *auth.Client
-	taskRepo   repository.FSTaskInterface
-	logger     *zap.Logger
+	taskRepo repository.FSTaskInterface
+	logger   *zap.Logger
 }
 
-func NewTaskService(authClient *auth.Client, taskRepo repository.FSTaskInterface, logger *zap.Logger) *TaskService {
+func NewTaskService(taskRepo repository.FSTaskInterface, logger *zap.Logger) *TaskService {
 	return &TaskService{
-		authClient: authClient,
-		taskRepo:   taskRepo,
-		logger:     logger,
+		taskRepo: taskRepo,
+		logger:   logger,
 	}
 }
 
@@ -119,5 +114,6 @@ func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest)
 		log.Error(err.Error())
 		return &v1.TaskList{Tasks: nil}, err
 	}
+	fmt.Println(repository.SliceToApi(tasks))
 	return repository.SliceToApi(tasks), nil
 }

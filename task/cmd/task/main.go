@@ -61,7 +61,7 @@ func main() {
 	}
 
 	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers), client)
-	taskService := service.NewTaskService(authClient, taskRepo, logger)
+	taskService := service.NewTaskService(taskRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient)
 
 	lis, err := net.Listen("tcp", grpcPort)

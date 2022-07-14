@@ -34,7 +34,8 @@ func (f *FSTask) Create(ctx context.Context, in Task) (Task, error) {
 	docRef := f.fs.Doc(in.UserID).Collection(CollectionTasks).NewDoc()
 	in.TaskID = docRef.ID
 	in.CreatedAt = time.Now().Unix()
-	//todo validation for time
+	// todo validation for time
+	// todo validation of input strings -> max length of name , desc
 	_, err := docRef.Set(ctx, in)
 	if err != nil {
 		return Task{}, err
@@ -61,6 +62,7 @@ func (f *FSTask) Get(ctx context.Context, userID, taskID string) (Task, error) {
 }
 
 func (f *FSTask) Update(ctx context.Context, newTask Task, userID, taskID string) (Task, error) {
+	// todo add field updatedAt instead of updating createdAt
 	newTask.CreatedAt = time.Now().Unix()
 	_, err := f.fs.Doc(userID).Collection(CollectionTasks).Doc(taskID).Set(ctx, newTask)
 	if err != nil {
@@ -88,6 +90,7 @@ func (f *FSTask) Delete(ctx context.Context, userID, taskID string) error {
 }
 
 func (f *FSTask) GetLastN(ctx context.Context, userID string, n int32) (tasks []Task, err error) {
+	// todo -> put cap on a number of tasks returned?
 	taskQuery := f.fs.Doc(userID).Collection(CollectionTasks).OrderBy("createdAt", firestore.Desc).Limit(int(n)).Documents(ctx)
 	for {
 		doc, err := taskQuery.Next()
@@ -95,12 +98,12 @@ func (f *FSTask) GetLastN(ctx context.Context, userID string, n int32) (tasks []
 			break
 		}
 		if err != nil {
-			return []Task{{}}, err
+			return nil, err
 		}
 		task := Task{}
 		err = doc.DataTo(&task)
 		if err != nil {
-			return []Task{{}}, err
+			return nil, err
 		}
 		tasks = append(tasks, task)
 	}
@@ -115,12 +118,12 @@ func (f *FSTask) GetExpired(ctx context.Context, userID string) (expiredTasks []
 			break
 		}
 		if err != nil {
-			return []Task{{}}, err
+			return nil, err
 		}
 		expiredTask := Task{}
 		err = taskDoc.DataTo(&expiredTask)
 		if err != nil {
-			return []Task{{}}, nil
+			return nil, err
 		}
 		expiredTasks = append(expiredTasks, expiredTask)
 	}

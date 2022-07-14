@@ -34,10 +34,11 @@ func (r *Reminder) RemindUserViaEmail(ctx context.Context, host, port, from stri
 		return err
 	}
 	if len(reminders) < 1 {
+		r.logger.Info("No expiring tasks")
 		return nil
 	}
 	batch := r.fs.Batch()
-	counter := 0
+	batchSize := 0
 	for email, tasks := range reminders {
 		for _, task := range tasks {
 			log := r.logger.With(
@@ -56,16 +57,16 @@ func (r *Reminder) RemindUserViaEmail(ctx context.Context, host, port, from stri
 			batch.Set(r.fs.Collection(repository.TaskList).Doc(task.TaskID), map[string]interface{}{
 				"reminderSent": true,
 			}, firestore.MergeAll)
-			counter++
-			if counter == 500 {
+			batchSize += 1
+			if batchSize == 500 {
 				_, err = batch.Commit(ctx)
 				if err != nil {
-					r.logger.Error(err.Error())
 					return err
 				}
 				continue
 			}
 		}
 	}
+	_, err = batch.Commit(ctx)
 	return nil
 }
