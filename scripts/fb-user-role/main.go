@@ -20,7 +20,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//TODO get input for setUserRole from terminal
 	email := flag.String("email", "", "User's email who's role is going to be assigned")
 	role := flag.String("role", "", "Role for authorization")
 	flag.Parse()

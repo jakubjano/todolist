@@ -8,6 +8,7 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
@@ -29,12 +30,9 @@ func main() {
 	}
 	defer logger.Sync()
 
-	viper.SetDefault("grpc.port", ":8181")
-	viper.SetDefault("gateway.port", ":8180")
-	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
-
-	//todo for future config files - can't panic here because config doesn't exist yet
-	viper.AddConfigPath("$HOME/.appname")
+	viper.SetConfigName("task_config")
+	viper.SetConfigType("json")
+	viper.AddConfigPath("./secret")
 	viper.AddConfigPath(".")
 	err = viper.ReadInConfig()
 	if err != nil {
@@ -61,8 +59,8 @@ func main() {
 		panic(err)
 	}
 
-	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers))
-	taskService := service.NewTaskService(authClient, taskRepo, logger)
+	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers), client)
+	taskService := service.NewTaskService(taskRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient)
 
 	lis, err := net.Listen("tcp", grpcPort)
@@ -104,7 +102,25 @@ func main() {
 		panic(err)
 	}
 
-	// cron
+	// cron reminders
+	settings := &service.Settings{
+		Host:     viper.GetString("host"),
+		Port:     viper.GetString("smtp_port"),
+		From:     viper.GetString("from"),
+		UserName: viper.GetString("username"),
+		Password: viper.GetString("password"),
+	}
+	emailSender := service.NewEmailSender(settings)
+	reminder := service.NewReminder(taskRepo, logger, emailSender, client)
+	c := cron.New()
+	c.AddFunc("@every 30s", func() {
+		err := reminder.RemindUserViaEmail(ctx)
+		if err != nil {
+			panic(err)
+		}
+	},
+	)
+	c.Start()
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
 	fmt.Printf("starting http server at '%s'\n", viper.GetString("gateway.port"))
@@ -112,5 +128,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 }

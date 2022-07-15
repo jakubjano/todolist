@@ -22,15 +22,8 @@ import (
 )
 
 func main() {
-	//todo viper config
-	// defaults + config file from env
-
 	//todo
 	// dotfiles $HOME/.config/ for viper and terraform ?
-
-	viper.SetDefault("grpc.port", ":8081")
-	viper.SetDefault("gateway.port", ":8080")
-	viper.SetDefault("secret.path", "secret/todolist-dd92e-firebase-adminsdk-9ase9-b03dcda63f.json")
 
 	logger, err := service.NewLogger()
 	if err != nil {
@@ -38,8 +31,9 @@ func main() {
 	}
 	defer logger.Sync()
 
-	// for future config files
-	viper.AddConfigPath("$HOME/.appname")
+	viper.SetConfigName("user_config")
+	viper.SetConfigType("json")
+	viper.AddConfigPath("./secret")
 	viper.AddConfigPath(".")
 	err = viper.ReadInConfig()
 	if err != nil {

@@ -32,6 +32,19 @@ service TaskService {
       delete: "/task"
     };
   }
+
+  rpc GetLastN(GetLastNRequest) returns (TaskList) {
+    option (google.api.http) = {
+      get: "/task/filter"
+        };
+  }
+
+  rpc GetExpired(GetExpiredRequest) returns (TaskList) {
+    option (google.api.http) = {
+      get: "/task/expired"
+    };
+  }
+
 }
 
 message Task {
@@ -41,6 +54,7 @@ message Task {
   string description = 4;
   int64 time = 5;
   string user_id = 6;
+  string user_email = 7;
 }
 
 message GetTaskRequest {
@@ -50,4 +64,15 @@ message GetTaskRequest {
 message DeleteTaskRequest {
   string task_id = 1;
 }
+
+message GetLastNRequest {
+  int32 n = 1;
+}
+
+message GetExpiredRequest {}
+
+message TaskList {
+  repeated Task tasks = 1;
+}
+
 

@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"firebase.google.com/go/auth"
+	"fmt"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
@@ -12,21 +12,16 @@ import (
 	"net/http"
 )
 
-//type TaskClientInterface interface {
-//}
-
 type TaskService struct {
 	v1.UnimplementedTaskServiceServer
-	authClient *auth.Client
-	taskRepo   repository.FSTaskInterface
-	logger     *zap.Logger
+	taskRepo repository.FSTaskInterface
+	logger   *zap.Logger
 }
 
-func NewTaskService(authClient *auth.Client, taskRepo repository.FSTaskInterface, logger *zap.Logger) *TaskService {
+func NewTaskService(taskRepo repository.FSTaskInterface, logger *zap.Logger) *TaskService {
 	return &TaskService{
-		authClient: authClient,
-		taskRepo:   taskRepo,
-		logger:     logger,
+		taskRepo: taskRepo,
+		logger:   logger,
 	}
 }
 
@@ -37,7 +32,8 @@ func (ts *TaskService) CreateTask(ctx context.Context, in *v1.Task) (*v1.Task, e
 		zap.String("caller_id", userCtx.UserID),
 	)
 	in.UserId = userCtx.UserID
-	task, err := ts.taskRepo.Create(ctx, userCtx.UserID, repository.TaskFromMsg(in))
+	in.UserEmail = userCtx.Email
+	task, err := ts.taskRepo.Create(ctx, repository.TaskFromMsg(in))
 	if err != nil {
 		log.Error(err.Error(), zap.String("task_id", task.TaskID))
 		return &v1.Task{}, status.Error(http.StatusInternalServerError, err.Error())
@@ -91,4 +87,33 @@ func (ts *TaskService) DeleteTask(ctx context.Context, in *v1.DeleteTaskRequest)
 		return &emptypb.Empty{}, status.Error(http.StatusInternalServerError, err.Error())
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (ts *TaskService) GetLastN(ctx context.Context, in *v1.GetLastNRequest) (*v1.TaskList, error) {
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
+	log := ts.logger.With(
+		zap.String("caller_email", userCtx.Email),
+		zap.String("caller_id", userCtx.UserID),
+	)
+	tasks, err := ts.taskRepo.GetLastN(ctx, userCtx.UserID, in.N)
+	if err != nil {
+		log.Error(err.Error())
+		return &v1.TaskList{Tasks: nil}, err
+	}
+	return repository.SliceToApi(tasks), nil
+}
+
+func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest) (*v1.TaskList, error) {
+	userCtx := ctx.Value(middleware.ContextUser).(*middleware.UserContext)
+	log := ts.logger.With(
+		zap.String("caller_email", userCtx.Email),
+		zap.String("caller_id", userCtx.UserID),
+	)
+	tasks, err := ts.taskRepo.GetExpired(ctx, userCtx.UserID)
+	if err != nil {
+		log.Error(err.Error())
+		return &v1.TaskList{Tasks: nil}, err
+	}
+	fmt.Println(repository.SliceToApi(tasks))
+	return repository.SliceToApi(tasks), nil
 }

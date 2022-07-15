@@ -134,6 +134,59 @@
           "TaskService"
         ]
       }
+    },
+    "/task/expired": {
+      "get": {
+        "operationId": "TaskService_GetExpired",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/taskTaskList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "TaskService"
+        ]
+      }
+    },
+    "/task/filter": {
+      "get": {
+        "operationId": "TaskService_GetLastN",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/taskTaskList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "n",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "TaskService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -186,6 +239,20 @@
         },
         "userId": {
           "type": "string"
+        },
+        "userEmail": {
+          "type": "string"
+        }
+      }
+    },
+    "taskTaskList": {
+      "type": "object",
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/taskTask"
+          }
         }
       }
     }
