@@ -20,7 +20,6 @@ import (
 	"jakubjano/todolist/task/pkg/service/repository"
 	"net"
 	"net/http"
-	"net/smtp"
 )
 
 func main() {
@@ -104,14 +103,18 @@ func main() {
 	}
 
 	// cron reminders
-	emailAuth := smtp.PlainAuth("", viper.GetString("username"), viper.GetString("password"),
-		viper.GetString("host"))
-	reminder := service.NewReminder(taskRepo, logger, emailAuth, client)
+	settings := &service.Settings{
+		Host:     viper.GetString("host"),
+		Port:     viper.GetString("smtp_port"),
+		From:     viper.GetString("from"),
+		UserName: viper.GetString("username"),
+		Password: viper.GetString("password"),
+	}
+	emailSender := service.NewEmailSender(settings)
+	reminder := service.NewReminder(taskRepo, logger, emailSender, client)
 	c := cron.New()
 	c.AddFunc("@every 30s", func() {
-		err := reminder.RemindUserViaEmail(ctx, viper.GetString("host"),
-			viper.GetString("smtp_port"),
-			viper.GetString("from"))
+		err := reminder.RemindUserViaEmail(ctx)
 		if err != nil {
 			panic(err)
 		}
