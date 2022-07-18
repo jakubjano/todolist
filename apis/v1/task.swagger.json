@@ -242,6 +242,10 @@
         },
         "userEmail": {
           "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

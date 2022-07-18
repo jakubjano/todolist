@@ -110,6 +110,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example1@tst.com",
 			Time:         7,
 			TaskID:       "tid1",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -120,6 +121,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example1@tst.com",
 			Time:         time.Now().Add(time.Minute * 1).Unix(),
 			TaskID:       "tid2",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -130,6 +132,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example1@tst.com",
 			Time:         10,
 			TaskID:       "tid3",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -140,6 +143,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example2@tst.com",
 			Time:         10,
 			TaskID:       "tid4",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -150,6 +154,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example3@tst.com",
 			Time:         10,
 			TaskID:       "tid5",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -160,6 +165,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example6@tst.com",
 			Time:         10,
 			TaskID:       "tid6",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		// tasks for reminder batch write testing
@@ -172,6 +178,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid7",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -182,6 +189,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid8",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -192,6 +200,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid9",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -202,6 +211,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid10",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -212,6 +222,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid11",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -222,6 +233,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid12",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		// User 7
@@ -233,6 +245,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid13",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -243,6 +256,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid14",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -253,6 +267,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid15",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -263,6 +278,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid16",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -273,6 +289,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid17",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -283,6 +300,7 @@ func (s *RepoTaskTestSuite) SetupTest() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid18",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 	}
@@ -360,6 +378,7 @@ func (s *RepoTaskTestSuite) TestGetTask() {
 				UserEmail:    "example1@tst.com",
 				Time:         7,
 				TaskID:       "tid1",
+				UpdatedAt:    0,
 				ReminderSent: false,
 			},
 			expectedCode: codes.OK,
@@ -409,8 +428,9 @@ func (s *RepoTaskTestSuite) TestCreateTask() {
 				Description:  "task1desc",
 				UserID:       "5",
 				UserEmail:    "example5@tst.com",
-				Time:         10,
+				Time:         time.Now().Add(time.Minute * 60).Unix(),
 				TaskID:       "6",
+				UpdatedAt:    0,
 				ReminderSent: false,
 			},
 			expectedResult: Task{
@@ -419,27 +439,13 @@ func (s *RepoTaskTestSuite) TestCreateTask() {
 				Description:  "task1desc",
 				UserID:       "5",
 				UserEmail:    "example5@tst.com",
-				Time:         10,
+				Time:         time.Now().Add(time.Minute * 60).Unix(),
 				TaskID:       "6",
+				UpdatedAt:    0,
 				ReminderSent: false,
 			},
 			expectedCode: codes.OK,
 		},
-		// invalid input - no data from context
-		//{
-		//	input: Task{
-		//		CreatedAt:    0,
-		//		Name:         "",
-		//		Description:  "",
-		//		UserID:       "",
-		//		UserEmail:    "",
-		//		Time:         0,
-		//		TaskID:       "",
-		//		ReminderSent: false,
-		//	},
-		//	expectedResult: Task{},
-		//	expectedCode:   codes.InvalidArgument,
-		//},
 		// invalid email -> email validation takes part in the User MS
 		//-> userID, userEmail is passed through context
 		{
@@ -451,6 +457,7 @@ func (s *RepoTaskTestSuite) TestCreateTask() {
 				UserEmail:    "@@@gamil.cz",
 				Time:         time.Now().Add(time.Minute * 60).Unix(),
 				TaskID:       "55",
+				UpdatedAt:    0,
 				ReminderSent: false,
 			},
 			expectedResult: Task{
@@ -461,9 +468,61 @@ func (s *RepoTaskTestSuite) TestCreateTask() {
 				UserEmail:    "@@@gamil.cz",
 				Time:         time.Now().Add(time.Minute * 60).Unix(),
 				TaskID:       "55",
+				UpdatedAt:    0,
 				ReminderSent: false,
 			},
 			expectedCode: codes.OK,
+		},
+		// invalid time
+		{
+			input: Task{
+				CreatedAt:    time.Now().Unix(),
+				Name:         "wrong_time",
+				Description:  "task with invalid time",
+				UserID:       "4",
+				UserEmail:    "example4@tst.com",
+				Time:         10,
+				TaskID:       "",
+				UpdatedAt:    0,
+				ReminderSent: false,
+			},
+			expectedResult: Task{},
+			expectedCode:   codes.Unknown,
+		},
+		// invalid desc
+		{
+			input: Task{
+				CreatedAt: time.Now().Unix(),
+				Name:      "name",
+				Description: "taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+					"sk with veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy" +
+					"looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong" +
+					"deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeescriptioooooooooooooooooooooon",
+				UserID:       "5",
+				UserEmail:    "example5@tst.com",
+				Time:         time.Now().Add(time.Minute * 60).Unix(),
+				TaskID:       "",
+				UpdatedAt:    0,
+				ReminderSent: false,
+			},
+			expectedResult: Task{},
+			expectedCode:   codes.Unknown,
+		},
+		// invalid name
+		{
+			input: Task{
+				CreatedAt:    time.Now().Unix(),
+				Name:         "looooooooooooooooooooooooooooooooooooooooooooooooooooong_naaaaaaaaaaaaaaaaaaaaaaaaaaame",
+				Description:  "task with invalid name",
+				UserID:       "6",
+				UserEmail:    "example6@tst.com",
+				Time:         time.Now().Add(time.Minute * 60).Unix(),
+				TaskID:       "",
+				UpdatedAt:    0,
+				ReminderSent: false,
+			},
+			expectedResult: Task{},
+			expectedCode:   codes.Unknown,
 		},
 	}
 	for i, candidate := range candidates {
@@ -496,6 +555,7 @@ func (s *RepoTaskTestSuite) TestUpdateTask() {
 				UserEmail:    "example1@tst.com",
 				Time:         11,
 				TaskID:       "tid1",
+				UpdatedAt:    7,
 				ReminderSent: false,
 			},
 			expectedResult: Task{
@@ -506,6 +566,7 @@ func (s *RepoTaskTestSuite) TestUpdateTask() {
 				UserEmail:    "example1@tst.com",
 				Time:         11,
 				TaskID:       "tid1",
+				UpdatedAt:    7,
 				ReminderSent: false,
 			},
 			expectedCode: codes.OK,
@@ -522,6 +583,7 @@ func (s *RepoTaskTestSuite) TestUpdateTask() {
 				UserEmail:    "example1@tst.com",
 				Time:         11,
 				TaskID:       "tid777",
+				UpdatedAt:    7,
 				ReminderSent: false,
 			},
 			expectedResult: Task{
@@ -532,6 +594,7 @@ func (s *RepoTaskTestSuite) TestUpdateTask() {
 				UserEmail:    "example1@tst.com",
 				Time:         11,
 				TaskID:       "tid777",
+				UpdatedAt:    7,
 				ReminderSent: false,
 			},
 			expectedCode: codes.OK,
@@ -540,6 +603,7 @@ func (s *RepoTaskTestSuite) TestUpdateTask() {
 	for i, candidate := range candidates {
 		task, err := s.taskRepo.Update(ctx, candidate.input, candidate.userID, candidate.taskID)
 		task.CreatedAt = candidate.input.CreatedAt
+		task.UpdatedAt = candidate.input.UpdatedAt
 		s.Equalf(candidate.expectedResult, task, "candidate %d", i+1)
 		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %d", i+1)
 	}
@@ -602,6 +666,7 @@ func (s *RepoTaskTestSuite) TestGetLastNTasks() {
 					UserEmail:    "example1@tst.com",
 					Time:         10,
 					TaskID:       "tid3",
+					UpdatedAt:    0,
 					ReminderSent: false,
 				},
 				{
@@ -612,6 +677,7 @@ func (s *RepoTaskTestSuite) TestGetLastNTasks() {
 					UserEmail:    "example1@tst.com",
 					Time:         time.Now().Add(time.Minute * 1).Unix(),
 					TaskID:       "tid2",
+					UpdatedAt:    0,
 					ReminderSent: false,
 				},
 			},
@@ -630,6 +696,7 @@ func (s *RepoTaskTestSuite) TestGetLastNTasks() {
 					UserEmail:    "example2@tst.com",
 					Time:         10,
 					TaskID:       "tid4",
+					UpdatedAt:    0,
 					ReminderSent: false,
 				},
 			},
@@ -663,6 +730,7 @@ func (s *RepoTaskTestSuite) TestGetExpiredTasks() {
 					UserEmail:    "example1@tst.com",
 					Time:         7,
 					TaskID:       "tid1",
+					UpdatedAt:    0,
 					ReminderSent: false,
 				},
 				{
@@ -673,6 +741,7 @@ func (s *RepoTaskTestSuite) TestGetExpiredTasks() {
 					UserEmail:    "example1@tst.com",
 					Time:         10,
 					TaskID:       "tid3",
+					UpdatedAt:    0,
 					ReminderSent: false,
 				},
 			},
@@ -704,6 +773,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example1@tst.com",
 			Time:         time.Now().Add(time.Minute * 1).Unix(),
 			TaskID:       "tid2",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 	}
@@ -716,6 +786,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid10",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -726,6 +797,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid11",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -736,6 +808,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid12",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -746,6 +819,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid7",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -756,6 +830,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid8",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -766,6 +841,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example6@tst.com",
 			Time:         time.Now().Add(time.Minute * 4).Unix(),
 			TaskID:       "tid9",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 	}
@@ -778,6 +854,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid13",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -788,6 +865,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid14",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -798,6 +876,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid15",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -808,6 +887,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid16",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -818,6 +898,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid17",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 		{
@@ -828,6 +909,7 @@ func (s *RepoTaskTestSuite) TestSearchForExpiringTasks() {
 			UserEmail:    "example7@tst.com",
 			Time:         time.Now().Add(time.Minute * 3).Unix(),
 			TaskID:       "tid18",
+			UpdatedAt:    0,
 			ReminderSent: false,
 		},
 	}

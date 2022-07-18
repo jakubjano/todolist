@@ -55,6 +55,7 @@ message Task {
   int64 time = 5;
   string user_id = 6;
   string user_email = 7;
+  int64 updated_at = 8;
 }
 
 message GetTaskRequest {

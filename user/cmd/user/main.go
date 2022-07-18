@@ -22,9 +22,6 @@ import (
 )
 
 func main() {
-	//todo
-	// dotfiles $HOME/.config/ for viper and terraform ?
-
 	logger, err := service.NewLogger()
 	if err != nil {
 		panic(err)

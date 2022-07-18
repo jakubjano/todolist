@@ -18,6 +18,7 @@ type Task struct {
 	UserEmail    string `firestore:"email"`
 	Time         int64  `firestore:"time"`
 	TaskID       string `firestore:"taskID"`
+	UpdatedAt    int64  `firestore:"updatedAt"`
 	ReminderSent bool   `firestore:"reminderSent"`
 }
 
@@ -52,6 +53,7 @@ func ToApi(task Task) *v1.Task {
 		Time:        task.Time,
 		UserId:      task.UserID,
 		UserEmail:   task.UserEmail,
+		UpdatedAt:   task.UpdatedAt,
 	}
 }
 
@@ -66,6 +68,7 @@ func SliceToApi(tasks []Task) *v1.TaskList {
 			Time:        task.Time,
 			UserId:      task.UserID,
 			UserEmail:   task.UserEmail,
+			UpdatedAt:   task.UpdatedAt,
 		}
 	}
 	return &v1.TaskList{Tasks: apiTasks}
