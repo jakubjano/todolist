@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
+	middleware "github.com/jakubjano/todolist/task/internal/auth"
+	"github.com/jakubjano/todolist/task/pkg/service/repository"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	middleware "jakubjano/todolist/task/internal/auth"
-	"jakubjano/todolist/task/pkg/service/repository"
 	"testing"
 )
 

@@ -7,7 +7,7 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.3
-	github.com/jakubjano/todolist/apis/go-sdk v0.0.0-20220718135748-d47bb7f24b6c
+	github.com/jakubjano/todolist/apis/go-sdk v0.0.0-20220718141444-f0521eb7324b
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.21.0

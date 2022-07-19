@@ -3,8 +3,8 @@ package service
 import (
 	"cloud.google.com/go/firestore"
 	"context"
+	"github.com/jakubjano/todolist/task/pkg/service/repository"
 	"go.uber.org/zap"
-	"jakubjano/todolist/task/pkg/service/repository"
 	"net/smtp"
 )
 

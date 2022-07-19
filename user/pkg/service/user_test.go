@@ -4,11 +4,11 @@ import (
 	"context"
 	"firebase.google.com/go/auth"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/user/v1"
+	middleware "github.com/jakubjano/todolist/user/internal/auth"
+	"github.com/jakubjano/todolist/user/pkg/service/repository"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
-	middleware "jakubjano/todolist/user/internal/auth"
-	"jakubjano/todolist/user/pkg/service/repository"
 	"net/http"
 	"testing"
 )

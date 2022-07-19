@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	v1 "github.com/jakubjano/todolist/apis/go-sdk/task/v1"
+	middleware "github.com/jakubjano/todolist/task/internal/auth"
+	"github.com/jakubjano/todolist/task/pkg/service/repository"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	middleware "jakubjano/todolist/task/internal/auth"
-	"jakubjano/todolist/task/pkg/service/repository"
 	"net/http"
 )
 
