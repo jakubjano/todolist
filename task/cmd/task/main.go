@@ -1,6 +1,7 @@
 package main
 
 import (
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 	"github.com/jakubjano/todolist/task/pkg/service/repository"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -24,24 +24,32 @@ import (
 
 func main() {
 
+	viper.SetDefault("grpc.port", ":8181")
+	viper.SetDefault("gateway.port", ":8180")
+	viper.SetDefault("firebase.secret", "projects/todolist-356712/secrets/firebase-key/versions/latest")
+	viper.SetDefault("host", "smtp.mailtrap.io")
+	viper.SetDefault("from", "jakubjanek8@gmail.com")
+	viper.SetDefault("email.credentials", "projects/todolist-356712/secrets/email-credentials/versions/latest")
+
+	ctx := context.Background()
 	logger, err := service.NewLogger()
 	if err != nil {
 		panic(err)
 	}
 	defer logger.Sync()
 
-	viper.SetConfigName("task_config")
-	viper.SetConfigType("json")
-	viper.AddConfigPath("./secret")
-	viper.AddConfigPath(".")
-	err = viper.ReadInConfig()
+	secretClient, err := secretmanager.NewClient(ctx)
 	if err != nil {
-		logger.Warn("error finding config file, using default values", zap.Error(err))
+		panic(err)
 	}
-
-	grpcPort := viper.GetString("grpc.port")
-	ctx := context.Background()
-	key := option.WithCredentialsFile(viper.GetString("secret.path"))
+	defer secretClient.Close()
+	secretManager := service.NewSecretManager(ctx, secretClient)
+	firebaseSecret, err := secretManager.AccessSecret(
+		viper.GetString("firebase.secret"))
+	if err != nil {
+		panic(err)
+	}
+	key := option.WithCredentialsJSON(firebaseSecret)
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
@@ -63,6 +71,7 @@ func main() {
 	taskService := service.NewTaskService(taskRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient)
 
+	grpcPort := viper.GetString("grpc.port")
 	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		panic(err)
@@ -103,12 +112,20 @@ func main() {
 	}
 
 	// cron reminders
+	credJsonData, err := secretManager.AccessSecret(
+		viper.GetString("email.credentials"))
+	if err != nil {
+		panic(err)
+	}
+	emailCredentials, err := secretManager.MapSecretData(credJsonData)
+	if err != nil {
+		panic(err)
+	}
 	settings := &service.Settings{
 		Host:     viper.GetString("host"),
-		Port:     viper.GetString("smtp_port"),
 		From:     viper.GetString("from"),
-		UserName: viper.GetString("username"),
-		Password: viper.GetString("password"),
+		UserName: emailCredentials.Username,
+		Password: emailCredentials.Password,
 	}
 	emailSender := service.NewEmailSender(settings)
 	reminder := service.NewReminder(taskRepo, logger, emailSender, client)
