@@ -6,10 +6,12 @@ import (
 	"github.com/jakubjano/todolist/task/pkg/service/repository"
 	"go.uber.org/zap"
 	"net/smtp"
+	"strconv"
 )
 
 const (
 	batchSize = 500
+	smtpPort  = 25
 )
 
 type Reminder struct {
@@ -25,7 +27,6 @@ type EmailSender interface {
 
 type Settings struct {
 	Host     string
-	Port     string
 	From     string
 	UserName string
 	Password string
@@ -36,7 +37,7 @@ type emailSender struct {
 }
 
 func (e *emailSender) Send(to []string, message []byte) error {
-	addr := e.emailSettings.Host + ":" + e.emailSettings.Port
+	addr := e.emailSettings.Host + ":" + strconv.Itoa(smtpPort)
 	auth := smtp.PlainAuth("", e.emailSettings.UserName, e.emailSettings.Password, e.emailSettings.Host)
 	return smtp.SendMail(addr, auth, e.emailSettings.From, to, message)
 }

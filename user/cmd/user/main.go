@@ -13,7 +13,6 @@ import (
 	"github.com/jakubjano/todolist/user/pkg/service"
 	"github.com/jakubjano/todolist/user/pkg/service/repository"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -23,20 +22,17 @@ import (
 )
 
 func main() {
+
+	viper.SetDefault("grpc.port", ":8081")
+	viper.SetDefault("gateway.port", ":8080")
+	viper.SetDefault("firebase.secret", "projects/todolist-356712/secrets/firebase-key/versions/latest")
+
 	ctx := context.Background()
 	logger, err := service.NewLogger()
 	if err != nil {
 		panic(err)
 	}
 	defer logger.Sync()
-
-	viper.SetConfigName("config")
-	viper.SetConfigType("json")
-	viper.AddConfigPath("./")
-	err = viper.ReadInConfig()
-	if err != nil {
-		logger.Warn("error finding config file, using default values", zap.Error(err))
-	}
 
 	secretClient, err := secretmanager.NewClient(ctx)
 	if err != nil {
