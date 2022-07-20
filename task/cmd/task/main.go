@@ -130,7 +130,7 @@ func main() {
 	emailSender := service.NewEmailSender(settings)
 	reminder := service.NewReminder(taskRepo, logger, emailSender, client)
 	c := cron.New()
-	c.AddFunc("@every 30s", func() {
+	c.AddFunc("@every 2h", func() {
 		err := reminder.RemindUserViaEmail(ctx)
 		if err != nil {
 			panic(err)
