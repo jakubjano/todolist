@@ -1,6 +1,7 @@
 package main
 
 import (
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
@@ -24,24 +25,33 @@ import (
 
 func main() {
 
+	ctx := context.Background()
 	logger, err := service.NewLogger()
 	if err != nil {
 		panic(err)
 	}
 	defer logger.Sync()
 
-	viper.SetConfigName("task_config")
+	viper.SetConfigName("config")
 	viper.SetConfigType("json")
-	viper.AddConfigPath("./secret")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath("./")
 	err = viper.ReadInConfig()
 	if err != nil {
 		logger.Warn("error finding config file, using default values", zap.Error(err))
 	}
 
-	grpcPort := viper.GetString("grpc.port")
-	ctx := context.Background()
-	key := option.WithCredentialsFile(viper.GetString("secret.path"))
+	secretClient, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer secretClient.Close()
+	secretManager := service.NewSecretManager(ctx, secretClient)
+	firebaseSecret, err := secretManager.AccessSecret(
+		viper.GetString("firebase.secret"))
+	if err != nil {
+		panic(err)
+	}
+	key := option.WithCredentialsJSON(firebaseSecret)
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
@@ -63,6 +73,7 @@ func main() {
 	taskService := service.NewTaskService(taskRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient)
 
+	grpcPort := viper.GetString("grpc.port")
 	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		panic(err)
@@ -103,13 +114,23 @@ func main() {
 	}
 
 	// cron reminders
+	credJsonData, err := secretManager.AccessSecret(
+		viper.GetString("email.credentials"))
+	if err != nil {
+		panic(err)
+	}
+	emailCredentials, err := secretManager.MapSecretData(credJsonData)
+	if err != nil {
+		panic(err)
+	}
 	settings := &service.Settings{
 		Host:     viper.GetString("host"),
-		Port:     viper.GetString("smtp_port"),
+		Port:     viper.GetString("smtp.port"),
 		From:     viper.GetString("from"),
-		UserName: viper.GetString("username"),
-		Password: viper.GetString("password"),
+		UserName: emailCredentials.Username,
+		Password: emailCredentials.Password,
 	}
+	fmt.Println(settings)
 	emailSender := service.NewEmailSender(settings)
 	reminder := service.NewReminder(taskRepo, logger, emailSender, client)
 	c := cron.New()

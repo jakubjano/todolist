@@ -97,6 +97,7 @@ func (r *Reminder) RemindUserViaEmail(ctx context.Context) error {
 			if taskCount == batchSize || (emailCount == mapLength && i == len(tasks)-1) {
 				_, err = batch.Commit(ctx)
 				if err != nil {
+					log.Error(err.Error())
 					return err
 				}
 				taskCount = 0

@@ -1,0 +1,6 @@
+{
+  "grpc.port": ":8081",
+  "gateway.port": ":8080",
+
+  "firebase.secret": "projects/todolist-356712/secrets/firebase-key/versions/latest"
+}

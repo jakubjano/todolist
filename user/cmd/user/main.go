@@ -1,6 +1,7 @@
 package main
 
 import (
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
@@ -22,27 +23,33 @@ import (
 )
 
 func main() {
-	//todo
-	// dotfiles $HOME/.config/ for viper and terraform ?
-
+	ctx := context.Background()
 	logger, err := service.NewLogger()
 	if err != nil {
 		panic(err)
 	}
 	defer logger.Sync()
 
-	viper.SetConfigName("user_config")
+	viper.SetConfigName("config")
 	viper.SetConfigType("json")
-	viper.AddConfigPath("./secret")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath("./")
 	err = viper.ReadInConfig()
 	if err != nil {
 		logger.Warn("error finding config file, using default values", zap.Error(err))
 	}
 
-	grpcPort := viper.GetString("grpc.port")
-	ctx := context.Background()
-	key := option.WithCredentialsFile(viper.GetString("secret.path"))
+	secretClient, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer secretClient.Close()
+	secretManager := service.NewSecretManager(ctx, secretClient)
+	firebaseSecret, err := secretManager.AccessSecret(
+		viper.GetString("firebase.secret"))
+	if err != nil {
+		panic(err)
+	}
+	key := option.WithCredentialsJSON(firebaseSecret)
 
 	app, err := firebase.NewApp(ctx, nil, key)
 	if err != nil {
@@ -64,6 +71,7 @@ func main() {
 	userService := service.NewUserService(authClient, userRepo, logger)
 	tokenClient := auth.NewTokenClient(authClient, logger)
 
+	grpcPort := viper.GetString("grpc.port")
 	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		panic(err)
