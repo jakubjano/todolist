@@ -34,8 +34,15 @@ func (f *FSTask) Create(ctx context.Context, in Task) (Task, error) {
 	docRef := f.fs.Doc(in.UserID).Collection(CollectionTasks).NewDoc()
 	in.TaskID = docRef.ID
 	in.CreatedAt = time.Now().Unix()
-	// todo validation for time
-	// todo validation of input strings -> max length of name , desc
+	if in.Time <= time.Now().Unix() {
+		return Task{}, ErrInvalidTime
+	}
+	if len(in.Name) > 50 {
+		return Task{}, ErrNameMaxLength
+	}
+	if len(in.Description) > 300 {
+		return Task{}, ErrDescMaxLength
+	}
 	_, err := docRef.Set(ctx, in)
 	if err != nil {
 		return Task{}, err
@@ -62,8 +69,7 @@ func (f *FSTask) Get(ctx context.Context, userID, taskID string) (Task, error) {
 }
 
 func (f *FSTask) Update(ctx context.Context, newTask Task, userID, taskID string) (Task, error) {
-	// todo add field updatedAt instead of updating createdAt
-	newTask.CreatedAt = time.Now().Unix()
+	newTask.UpdatedAt = time.Now().Unix()
 	_, err := f.fs.Doc(userID).Collection(CollectionTasks).Doc(taskID).Set(ctx, newTask)
 	if err != nil {
 		return Task{}, err
@@ -90,7 +96,6 @@ func (f *FSTask) Delete(ctx context.Context, userID, taskID string) error {
 }
 
 func (f *FSTask) GetLastN(ctx context.Context, userID string, n int32) (tasks []Task, err error) {
-	// todo -> put cap on a number of tasks returned?
 	taskQuery := f.fs.Doc(userID).Collection(CollectionTasks).OrderBy("createdAt", firestore.Desc).Limit(int(n)).Documents(ctx)
 	for {
 		doc, err := taskQuery.Next()
