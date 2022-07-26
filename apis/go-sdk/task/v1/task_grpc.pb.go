@@ -29,6 +29,14 @@ type TaskServiceClient interface {
 	DeleteTask(ctx context.Context, in *DeleteTaskRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetLastN(ctx context.Context, in *GetLastNRequest, opts ...grpc.CallOption) (*TaskList, error)
 	GetExpired(ctx context.Context, in *GetExpiredRequest, opts ...grpc.CallOption) (*TaskList, error)
+	PostReminder(ctx context.Context, in *PostReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	CreateScheduledJob(ctx context.Context, in *CreateScheduledJobRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error)
+	UpdateScheduledJob(ctx context.Context, in *UpdateScheduledJobRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error)
+	PauseScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error)
+	ResumeScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error)
+	DeleteScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	ListScheduledJobs(ctx context.Context, in *ListScheduledJobsRequest, opts ...grpc.CallOption) (*JobList, error)
+	RunScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error)
 }
 
 type taskServiceClient struct {
@@ -93,6 +101,78 @@ func (c *taskServiceClient) GetExpired(ctx context.Context, in *GetExpiredReques
 	return out, nil
 }
 
+func (c *taskServiceClient) PostReminder(ctx context.Context, in *PostReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/task.TaskService/PostReminder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) CreateScheduledJob(ctx context.Context, in *CreateScheduledJobRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error) {
+	out := new(ScheduledJobResponse)
+	err := c.cc.Invoke(ctx, "/task.TaskService/CreateScheduledJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) UpdateScheduledJob(ctx context.Context, in *UpdateScheduledJobRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error) {
+	out := new(ScheduledJobResponse)
+	err := c.cc.Invoke(ctx, "/task.TaskService/UpdateScheduledJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) PauseScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error) {
+	out := new(ScheduledJobResponse)
+	err := c.cc.Invoke(ctx, "/task.TaskService/PauseScheduledJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) ResumeScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error) {
+	out := new(ScheduledJobResponse)
+	err := c.cc.Invoke(ctx, "/task.TaskService/ResumeScheduledJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) DeleteScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/task.TaskService/DeleteScheduledJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) ListScheduledJobs(ctx context.Context, in *ListScheduledJobsRequest, opts ...grpc.CallOption) (*JobList, error) {
+	out := new(JobList)
+	err := c.cc.Invoke(ctx, "/task.TaskService/ListScheduledJobs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) RunScheduledJob(ctx context.Context, in *ScheduledJobOperationRequest, opts ...grpc.CallOption) (*ScheduledJobResponse, error) {
+	out := new(ScheduledJobResponse)
+	err := c.cc.Invoke(ctx, "/task.TaskService/RunScheduledJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskServiceServer is the server API for TaskService service.
 // All implementations must embed UnimplementedTaskServiceServer
 // for forward compatibility
@@ -103,6 +183,14 @@ type TaskServiceServer interface {
 	DeleteTask(context.Context, *DeleteTaskRequest) (*empty.Empty, error)
 	GetLastN(context.Context, *GetLastNRequest) (*TaskList, error)
 	GetExpired(context.Context, *GetExpiredRequest) (*TaskList, error)
+	PostReminder(context.Context, *PostReminderRequest) (*empty.Empty, error)
+	CreateScheduledJob(context.Context, *CreateScheduledJobRequest) (*ScheduledJobResponse, error)
+	UpdateScheduledJob(context.Context, *UpdateScheduledJobRequest) (*ScheduledJobResponse, error)
+	PauseScheduledJob(context.Context, *ScheduledJobOperationRequest) (*ScheduledJobResponse, error)
+	ResumeScheduledJob(context.Context, *ScheduledJobOperationRequest) (*ScheduledJobResponse, error)
+	DeleteScheduledJob(context.Context, *ScheduledJobOperationRequest) (*empty.Empty, error)
+	ListScheduledJobs(context.Context, *ListScheduledJobsRequest) (*JobList, error)
+	RunScheduledJob(context.Context, *ScheduledJobOperationRequest) (*ScheduledJobResponse, error)
 	mustEmbedUnimplementedTaskServiceServer()
 }
 
@@ -127,6 +215,30 @@ func (UnimplementedTaskServiceServer) GetLastN(context.Context, *GetLastNRequest
 }
 func (UnimplementedTaskServiceServer) GetExpired(context.Context, *GetExpiredRequest) (*TaskList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetExpired not implemented")
+}
+func (UnimplementedTaskServiceServer) PostReminder(context.Context, *PostReminderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostReminder not implemented")
+}
+func (UnimplementedTaskServiceServer) CreateScheduledJob(context.Context, *CreateScheduledJobRequest) (*ScheduledJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateScheduledJob not implemented")
+}
+func (UnimplementedTaskServiceServer) UpdateScheduledJob(context.Context, *UpdateScheduledJobRequest) (*ScheduledJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateScheduledJob not implemented")
+}
+func (UnimplementedTaskServiceServer) PauseScheduledJob(context.Context, *ScheduledJobOperationRequest) (*ScheduledJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PauseScheduledJob not implemented")
+}
+func (UnimplementedTaskServiceServer) ResumeScheduledJob(context.Context, *ScheduledJobOperationRequest) (*ScheduledJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResumeScheduledJob not implemented")
+}
+func (UnimplementedTaskServiceServer) DeleteScheduledJob(context.Context, *ScheduledJobOperationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteScheduledJob not implemented")
+}
+func (UnimplementedTaskServiceServer) ListScheduledJobs(context.Context, *ListScheduledJobsRequest) (*JobList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListScheduledJobs not implemented")
+}
+func (UnimplementedTaskServiceServer) RunScheduledJob(context.Context, *ScheduledJobOperationRequest) (*ScheduledJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RunScheduledJob not implemented")
 }
 func (UnimplementedTaskServiceServer) mustEmbedUnimplementedTaskServiceServer() {}
 
@@ -249,6 +361,150 @@ func _TaskService_GetExpired_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TaskService_PostReminder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostReminderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).PostReminder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/PostReminder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).PostReminder(ctx, req.(*PostReminderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_CreateScheduledJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateScheduledJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).CreateScheduledJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/CreateScheduledJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).CreateScheduledJob(ctx, req.(*CreateScheduledJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_UpdateScheduledJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateScheduledJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).UpdateScheduledJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/UpdateScheduledJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).UpdateScheduledJob(ctx, req.(*UpdateScheduledJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_PauseScheduledJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduledJobOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).PauseScheduledJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/PauseScheduledJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).PauseScheduledJob(ctx, req.(*ScheduledJobOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_ResumeScheduledJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduledJobOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).ResumeScheduledJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/ResumeScheduledJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).ResumeScheduledJob(ctx, req.(*ScheduledJobOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_DeleteScheduledJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduledJobOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).DeleteScheduledJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/DeleteScheduledJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).DeleteScheduledJob(ctx, req.(*ScheduledJobOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_ListScheduledJobs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListScheduledJobsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).ListScheduledJobs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/ListScheduledJobs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).ListScheduledJobs(ctx, req.(*ListScheduledJobsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_RunScheduledJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduledJobOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).RunScheduledJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskService/RunScheduledJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).RunScheduledJob(ctx, req.(*ScheduledJobOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TaskService_ServiceDesc is the grpc.ServiceDesc for TaskService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -279,6 +535,38 @@ var TaskService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetExpired",
 			Handler:    _TaskService_GetExpired_Handler,
+		},
+		{
+			MethodName: "PostReminder",
+			Handler:    _TaskService_PostReminder_Handler,
+		},
+		{
+			MethodName: "CreateScheduledJob",
+			Handler:    _TaskService_CreateScheduledJob_Handler,
+		},
+		{
+			MethodName: "UpdateScheduledJob",
+			Handler:    _TaskService_UpdateScheduledJob_Handler,
+		},
+		{
+			MethodName: "PauseScheduledJob",
+			Handler:    _TaskService_PauseScheduledJob_Handler,
+		},
+		{
+			MethodName: "ResumeScheduledJob",
+			Handler:    _TaskService_ResumeScheduledJob_Handler,
+		},
+		{
+			MethodName: "DeleteScheduledJob",
+			Handler:    _TaskService_DeleteScheduledJob_Handler,
+		},
+		{
+			MethodName: "ListScheduledJobs",
+			Handler:    _TaskService_ListScheduledJobs_Handler,
+		},
+		{
+			MethodName: "RunScheduledJob",
+			Handler:    _TaskService_RunScheduledJob_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

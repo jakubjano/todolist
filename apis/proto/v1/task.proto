@@ -45,6 +45,60 @@ service TaskService {
     };
   }
 
+  rpc PostReminder(PostReminderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/task/reminder"
+      body: "*"
+    };
+  }
+
+  rpc CreateScheduledJob(CreateScheduledJobRequest) returns (ScheduledJobResponse) {
+    option (google.api.http) = {
+      post: "/task/scheduler/new"
+      body: "*"
+    };
+  }
+
+  rpc UpdateScheduledJob(UpdateScheduledJobRequest) returns (ScheduledJobResponse) {
+    option (google.api.http) = {
+      patch: "/task/scheduler/update"
+      body: "*"
+    };
+  }
+
+  rpc PauseScheduledJob(ScheduledJobOperationRequest) returns (ScheduledJobResponse) {
+    option (google.api.http) = {
+      post: "/task/scheduler/pause"
+      body: "*"
+    };
+  }
+
+  rpc ResumeScheduledJob(ScheduledJobOperationRequest) returns (ScheduledJobResponse) {
+    option (google.api.http) = {
+      post: "/task/scheduler/resume"
+      body: "*"
+    };
+  }
+
+  rpc DeleteScheduledJob(ScheduledJobOperationRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/task/scheduler/delete"
+    };
+  }
+
+  rpc ListScheduledJobs(ListScheduledJobsRequest) returns (JobList) {
+    option (google.api.http) = {
+      get: "/task/scheduler/list"
+    };
+  }
+
+  rpc RunScheduledJob(ScheduledJobOperationRequest) returns (ScheduledJobResponse) {
+    option (google.api.http) = {
+      post: "/task/scheduler/run"
+      body: "*"
+    };
+  }
+
 }
 
 message Task {
@@ -71,8 +125,49 @@ message GetLastNRequest {
 
 message GetExpiredRequest {}
 
+message PostReminderRequest {}
+
 message TaskList {
   repeated Task tasks = 1;
 }
+
+message ScheduledJobOperationRequest {
+  string name = 1;
+}
+
+message ScheduledJobResponse {
+  string name = 1;
+  string state = 2;
+  string schedule = 3;
+  string description =4;
+  string method = 5;
+  string target = 6;
+}
+
+message CreateScheduledJobRequest {
+  string name = 1;
+  string schedule =2;
+  string target = 3;
+  string method = 4;
+  string description = 5;
+}
+
+message UpdateScheduledJobRequest {
+  string name = 1;
+  string schedule = 2;
+  string description = 3;
+}
+
+message JobList {
+  repeated ScheduledJobResponse jobs = 1;
+}
+
+message ListScheduledJobsRequest {}
+
+
+
+
+
+
 
 

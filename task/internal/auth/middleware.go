@@ -3,9 +3,10 @@ package auth
 import (
 	"context"
 	"firebase.google.com/go/auth"
-	"fmt"
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"strings"
 )
 
 const (
@@ -14,11 +15,13 @@ const (
 
 type TokenClient struct {
 	authClient *auth.Client
+	logger     *zap.Logger
 }
 
-func NewTokenClient(authClient *auth.Client) *TokenClient {
+func NewTokenClient(authClient *auth.Client, logger *zap.Logger) *TokenClient {
 	return &TokenClient{
 		authClient: authClient,
+		logger:     logger,
 	}
 }
 
@@ -28,15 +31,19 @@ type UserContext struct {
 	Role   string
 }
 
-// UnaryServerInterceptor returns a new unary server interceptors that performs per-request auth.
+// CustomUnaryInterceptor returns a new unary server interceptors that performs per-request auth.
 func (t *TokenClient) CustomUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		// exception for a scheduled call of PostReminder endpoint
+		if info.FullMethod == "/task.TaskService/PostReminder" || strings.Contains(info.FullMethod, "Scheduled") {
+			return handler(ctx, req)
+		}
 		newCtx, err := t.AuthFunc(ctx)
 		if err != nil {
 			// token can't be parsed without complete/authorized signature
 			// so when error occurs and the request is intercepted there are no data
 			// of the user that tried and failed to authorize
-			fmt.Printf("error authorizing request: %v", err)
+			t.logger.Error(err.Error())
 			return nil, err
 		}
 		return handler(newCtx, req)
@@ -47,14 +54,14 @@ func (t *TokenClient) AuthFunc(ctx context.Context) (context.Context, error) {
 	// AuthFromMD searches for Authorization header from request that is carried by context
 	jwt, err := grpcAuth.AuthFromMD(ctx, "bearer")
 	if err != nil {
-		fmt.Printf("error obtaining auth header from metadata: %v", err)
+		t.logger.Error(err.Error())
 		return nil, err
 	}
 	// VerifyIDToken searches for projectID in key automatically when client was initialized with service account
 	// credentials
 	token, err := t.authClient.VerifyIDToken(ctx, jwt)
 	if err != nil {
-		fmt.Printf("error verifying token: %v", err)
+		t.logger.Error(err.Error())
 		return nil, err
 	}
 	data := token.Claims

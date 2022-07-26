@@ -14,7 +14,11 @@ const (
 	smtpPort  = 25
 )
 
-type Reminder struct {
+type Reminder interface {
+	RemindUserViaEmail(ctx context.Context) error
+}
+
+type remind struct {
 	taskRepo    repository.FSTaskInterface
 	logger      *zap.Logger
 	emailSender EmailSender
@@ -47,8 +51,8 @@ func NewEmailSender(emailSetting *Settings) EmailSender {
 }
 
 func NewReminder(taskRepo repository.FSTaskInterface, logger *zap.Logger, emailSender EmailSender,
-	fs *firestore.Client) *Reminder {
-	return &Reminder{
+	fs *firestore.Client) *remind {
+	return &remind{
 		taskRepo:    taskRepo,
 		logger:      logger,
 		emailSender: emailSender,
@@ -59,7 +63,7 @@ func NewReminder(taskRepo repository.FSTaskInterface, logger *zap.Logger, emailS
 // RemindUserViaEmail checks if there are any reminders to send out to users
 // then iterates through each task and sends it via smtp to the corresponding email address with a prebuilt message
 // after the reminders are sent, RemindUserViaEmail flags the tasks with boolean and updates the database
-func (r *Reminder) RemindUserViaEmail(ctx context.Context) error {
+func (r *remind) RemindUserViaEmail(ctx context.Context) error {
 	reminders, err := r.taskRepo.SearchForExpiringTasks(ctx)
 	if err != nil {
 		r.logger.Error(err.Error())
@@ -75,6 +79,9 @@ func (r *Reminder) RemindUserViaEmail(ctx context.Context) error {
 	emailCount := 0
 	for email, tasks := range reminders {
 		emailCount += 1
+		if len(tasks) < 1 {
+			r.logger.Warn("Empty tasks for user", zap.String("email", email))
+		}
 		for i, task := range tasks {
 			log := r.logger.With(
 				zap.String("email", email),

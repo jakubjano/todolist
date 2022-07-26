@@ -19,6 +19,8 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
+replace github.com/jakubjano/todolist/apis/go-sdk => ../apis/go-sdk
+
 require (
 	cloud.google.com/go v0.102.0 // indirect
 	cloud.google.com/go/compute v1.7.0 // indirect

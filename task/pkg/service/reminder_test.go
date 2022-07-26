@@ -19,7 +19,7 @@ type ReminderTestSuite struct {
 	client      *firestore.Client
 	taskRepo    repository.FSTaskInterface
 	clientMock  *ClientMock
-	reminder    *Reminder
+	reminder    Reminder
 	emailSender EmailSender
 }
 

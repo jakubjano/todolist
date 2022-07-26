@@ -7,6 +7,8 @@ import (
 	"github.com/jakubjano/todolist/task/pkg/service/repository"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
+	cloudscheduler "google.golang.org/api/cloudscheduler/v1beta1"
+	"google.golang.org/api/googleapi"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"testing"
@@ -14,14 +16,20 @@ import (
 
 type ServiceTaskTestSuite struct {
 	suite.Suite
-	ts       *TaskService
-	mockRepo *repository.FSTaskMock
+	ts            *TaskService
+	mockRepo      *repository.FSTaskMock
+	schedulerMock *SchedulerMock
+	reminderMock  *ReminderMock
 }
 
 func (s *ServiceTaskTestSuite) SetupSuite() {
 	logger, _ := zap.NewProduction()
 	taskRepo := repository.NewMockRepo()
-	ts := NewTaskService(taskRepo, logger)
+	reminderMock := NewReminderMock()
+	schedulerMock := NewSchedulerMock()
+	ts := NewTaskService(taskRepo, logger, reminderMock, schedulerMock)
+	s.schedulerMock = schedulerMock
+	s.reminderMock = reminderMock
 	s.mockRepo = taskRepo
 	s.ts = ts
 }
@@ -460,6 +468,377 @@ func (s *ServiceTaskTestSuite) TestGetExpiredTasks() {
 		tasks, err := s.ts.GetExpired(candidate.ctx, candidate.in)
 		s.mockRepo.AssertCalled(s.T(), "GetExpired", candidate.ctx, userCtx.UserID)
 		s.Equalf(candidate.expectedResult, tasks, "candidate %d", i+1)
+		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %:", i+1)
+	}
+}
+
+func (s *ServiceTaskTestSuite) TestPostReminder() {
+	ctx := context.Background()
+	s.reminderMock.On("RemindUserViaEmail", ctx).Return(nil)
+	_, err := s.ts.PostReminder(ctx, nil)
+	s.NoError(err)
+	s.reminderMock.AssertNumberOfCalls(s.T(), "RemindUserViaEmail", 1)
+}
+
+func (s *ServiceTaskTestSuite) TestCreateScheduledJob() {
+	ctx := context.Background()
+	candidates := []struct {
+		in             *v1.CreateScheduledJobRequest
+		mockReturn     *cloudscheduler.Job
+		expectedResult *v1.ScheduledJobResponse
+		expectedError  error
+		expectedCode   codes.Code
+	}{
+		// valid input
+		{
+			in: &v1.CreateScheduledJobRequest{
+				Name:        "job1",
+				Schedule:    "*/10 * * * *",
+				Target:      "test.com/scheduler",
+				Method:      "post",
+				Description: "desc1",
+			},
+			mockReturn: &cloudscheduler.Job{
+				AppEngineHttpTarget: nil,
+				AttemptDeadline:     "",
+				Description:         "desc1",
+				HttpTarget: &cloudscheduler.HttpTarget{
+					Body:            "",
+					Headers:         nil,
+					HttpMethod:      "POST",
+					OauthToken:      nil,
+					OidcToken:       nil,
+					Uri:             "test.com/scheduler",
+					ForceSendFields: nil,
+					NullFields:      nil,
+				},
+				LastAttemptTime:     "",
+				LegacyAppEngineCron: false,
+				Name:                "job1",
+				PubsubTarget:        nil,
+				RetryConfig:         nil,
+				Schedule:            "*/10 * * * *",
+				ScheduleTime:        "",
+				State:               "ENABLED",
+				Status:              nil,
+				TimeZone:            "",
+				UserUpdateTime:      "",
+				ServerResponse:      googleapi.ServerResponse{},
+				ForceSendFields:     nil,
+				NullFields:          nil,
+			},
+			expectedResult: &v1.ScheduledJobResponse{
+				Name:        "job1",
+				State:       "ENABLED",
+				Schedule:    "*/10 * * * *",
+				Description: "desc1",
+				Method:      "POST",
+				Target:      "test.com/scheduler",
+			},
+			expectedError: nil,
+			expectedCode:  codes.OK,
+		},
+	}
+	for i, candidate := range candidates {
+		s.schedulerMock.On("CreateScheduledJob",
+			ctx,
+			candidate.in.Name,
+			candidate.in.Schedule,
+			candidate.in.Target,
+			candidate.in.Method,
+			candidate.in.Description).Return(candidate.mockReturn,
+			candidate.expectedError)
+		job, err := s.ts.CreateScheduledJob(ctx, candidate.in)
+		s.schedulerMock.AssertCalled(s.T(), "CreateScheduledJob",
+			ctx,
+			candidate.in.Name,
+			candidate.in.Schedule,
+			candidate.in.Target,
+			candidate.in.Method,
+			candidate.in.Description)
+		s.Equalf(candidate.expectedResult, job, "candidate %d", i+1)
+		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %:", i+1)
+	}
+}
+
+func (s *ServiceTaskTestSuite) TestUpdateScheduledJob() {
+	ctx := context.Background()
+	candidates := []struct {
+		in             *v1.UpdateScheduledJobRequest
+		mockReturn     *cloudscheduler.Job
+		expectedResult *v1.ScheduledJobResponse
+		expectedError  error
+		expectedCode   codes.Code
+	}{
+		//
+		{
+			in: &v1.UpdateScheduledJobRequest{
+				Name:        "updated name",
+				Schedule:    "*/5 * * * *",
+				Description: "updated desc",
+			},
+			mockReturn: &cloudscheduler.Job{
+				AppEngineHttpTarget: nil,
+				AttemptDeadline:     "",
+				Description:         "updated desc",
+				HttpTarget: &cloudscheduler.HttpTarget{
+					Body:            "",
+					Headers:         nil,
+					HttpMethod:      "POST",
+					OauthToken:      nil,
+					OidcToken:       nil,
+					Uri:             "test.com/scheduler",
+					ForceSendFields: nil,
+					NullFields:      nil,
+				},
+				LastAttemptTime:     "",
+				LegacyAppEngineCron: false,
+				Name:                "updated name",
+				PubsubTarget:        nil,
+				RetryConfig:         nil,
+				Schedule:            "*/5 * * * *",
+				ScheduleTime:        "",
+				State:               "ENABLED",
+				Status:              nil,
+				TimeZone:            "",
+				UserUpdateTime:      "",
+				ServerResponse:      googleapi.ServerResponse{},
+				ForceSendFields:     nil,
+				NullFields:          nil,
+			},
+			expectedResult: &v1.ScheduledJobResponse{
+				Name:        "updated name",
+				State:       "ENABLED",
+				Schedule:    "*/5 * * * *",
+				Description: "updated desc",
+				Method:      "POST",
+				Target:      "test.com/scheduler",
+			},
+			expectedError: nil,
+			expectedCode:  codes.OK,
+		},
+	}
+	for i, candidate := range candidates {
+		s.schedulerMock.On("PatchScheduledJob",
+			ctx,
+			candidate.in.Name,
+			candidate.in.Schedule,
+			candidate.in.Description).Return(candidate.mockReturn,
+			candidate.expectedError)
+		job, err := s.ts.UpdateScheduledJob(ctx, candidate.in)
+		s.schedulerMock.AssertCalled(s.T(), "PatchScheduledJob",
+			ctx,
+			candidate.in.Name,
+			candidate.in.Schedule,
+			candidate.in.Description)
+		s.Equalf(candidate.expectedResult, job, "candidate %d", i+1)
+		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %:", i+1)
+	}
+}
+
+func (s *ServiceTaskTestSuite) TestPauseScheduledJob() {
+	ctx := context.Background()
+	candidates := []struct {
+		in             *v1.ScheduledJobOperationRequest
+		mockReturn     *cloudscheduler.Job
+		expectedResult *v1.ScheduledJobResponse
+		expectedError  error
+		expectedCode   codes.Code
+	}{
+		{
+			in: &v1.ScheduledJobOperationRequest{Name: "job1"},
+			mockReturn: &cloudscheduler.Job{
+				AppEngineHttpTarget: nil,
+				AttemptDeadline:     "",
+				Description:         "desc1",
+				HttpTarget: &cloudscheduler.HttpTarget{
+					Body:            "",
+					Headers:         nil,
+					HttpMethod:      "POST",
+					OauthToken:      nil,
+					OidcToken:       nil,
+					Uri:             "test.com/scheduler",
+					ForceSendFields: nil,
+					NullFields:      nil,
+				},
+				LastAttemptTime:     "",
+				LegacyAppEngineCron: false,
+				Name:                "job1",
+				PubsubTarget:        nil,
+				RetryConfig:         nil,
+				Schedule:            "*/10 * * * *",
+				ScheduleTime:        "",
+				State:               "PAUSED",
+				Status:              nil,
+				TimeZone:            "",
+				UserUpdateTime:      "",
+				ServerResponse:      googleapi.ServerResponse{},
+				ForceSendFields:     nil,
+				NullFields:          nil,
+			},
+			expectedResult: &v1.ScheduledJobResponse{
+				Name:        "job1",
+				State:       "PAUSED",
+				Schedule:    "*/10 * * * *",
+				Description: "desc1",
+				Method:      "POST",
+				Target:      "test.com/scheduler",
+			},
+			expectedError: nil,
+			expectedCode:  codes.OK,
+		},
+	}
+	for i, candidate := range candidates {
+		s.schedulerMock.On("PauseScheduledJob", ctx, candidate.in.Name).
+			Return(candidate.mockReturn, candidate.expectedError)
+		job, err := s.ts.PauseScheduledJob(ctx, candidate.in)
+		s.schedulerMock.AssertCalled(s.T(), "PauseScheduledJob", ctx, candidate.in.Name)
+		s.Equalf(candidate.expectedResult, job, "candidate %d", i+1)
+		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %:", i+1)
+	}
+}
+
+func (s *ServiceTaskTestSuite) TestResumeScheduledJob() {
+	ctx := context.Background()
+	candidates := []struct {
+		in             *v1.ScheduledJobOperationRequest
+		mockReturn     *cloudscheduler.Job
+		expectedResult *v1.ScheduledJobResponse
+		expectedError  error
+		expectedCode   codes.Code
+	}{
+		{
+			in: &v1.ScheduledJobOperationRequest{Name: "job1"},
+			mockReturn: &cloudscheduler.Job{
+				AppEngineHttpTarget: nil,
+				AttemptDeadline:     "",
+				Description:         "desc1",
+				HttpTarget: &cloudscheduler.HttpTarget{
+					Body:            "",
+					Headers:         nil,
+					HttpMethod:      "POST",
+					OauthToken:      nil,
+					OidcToken:       nil,
+					Uri:             "test.com/scheduler.com",
+					ForceSendFields: nil,
+					NullFields:      nil,
+				},
+				LastAttemptTime:     "",
+				LegacyAppEngineCron: false,
+				Name:                "job1",
+				PubsubTarget:        nil,
+				RetryConfig:         nil,
+				Schedule:            "*/10 * * * *",
+				ScheduleTime:        "",
+				State:               "ENABLED",
+				Status:              nil,
+				TimeZone:            "",
+				UserUpdateTime:      "",
+				ServerResponse:      googleapi.ServerResponse{},
+				ForceSendFields:     nil,
+				NullFields:          nil,
+			},
+			expectedResult: &v1.ScheduledJobResponse{
+				Name:        "job1",
+				State:       "ENABLED",
+				Schedule:    "*/10 * * * *",
+				Description: "desc1",
+				Method:      "POST",
+				Target:      "test.com/scheduler.com",
+			},
+			expectedError: nil,
+			expectedCode:  codes.OK,
+		},
+	}
+	for i, candidate := range candidates {
+		s.schedulerMock.On("ResumeScheduledJob", ctx, candidate.in.Name).
+			Return(candidate.mockReturn, candidate.expectedError)
+		job, err := s.ts.ResumeScheduledJob(ctx, candidate.in)
+		s.schedulerMock.AssertCalled(s.T(), "ResumeScheduledJob", ctx, candidate.in.Name)
+		s.Equalf(candidate.expectedResult, job, "candidate %d", i+1)
+		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %:", i+1)
+	}
+}
+
+func (s *ServiceTaskTestSuite) TestDeleteScheduledJob() {
+	ctx := context.Background()
+	candidates := []struct {
+		in            *v1.ScheduledJobOperationRequest
+		expectedError error
+		expectedCode  codes.Code
+	}{
+		{
+			in:            &v1.ScheduledJobOperationRequest{Name: "job1"},
+			expectedError: nil,
+			expectedCode:  codes.OK,
+		},
+	}
+	for i, candidate := range candidates {
+		s.schedulerMock.On("DeleteScheduledJob", ctx, candidate.in.Name).Return(nil)
+		_, err := s.ts.DeleteScheduledJob(ctx, candidate.in)
+		s.schedulerMock.AssertCalled(s.T(), "DeleteScheduledJob", ctx, candidate.in.Name)
+		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %:", i+1)
+	}
+}
+
+func (s *ServiceTaskTestSuite) TestRunScheduledJob() {
+	ctx := context.Background()
+	candidates := []struct {
+		in             *v1.ScheduledJobOperationRequest
+		mockReturn     *cloudscheduler.Job
+		expectedResult *v1.ScheduledJobResponse
+		expectedError  error
+		expectedCode   codes.Code
+	}{
+		{
+			in: &v1.ScheduledJobOperationRequest{Name: "job1"},
+			mockReturn: &cloudscheduler.Job{
+				AppEngineHttpTarget: nil,
+				AttemptDeadline:     "",
+				Description:         "desc1",
+				HttpTarget: &cloudscheduler.HttpTarget{
+					Body:            "",
+					Headers:         nil,
+					HttpMethod:      "POST",
+					OauthToken:      nil,
+					OidcToken:       nil,
+					Uri:             "test.com/scheduler",
+					ForceSendFields: nil,
+					NullFields:      nil,
+				},
+				LastAttemptTime:     "",
+				LegacyAppEngineCron: false,
+				Name:                "job1",
+				PubsubTarget:        nil,
+				RetryConfig:         nil,
+				Schedule:            "*/10 * * * *",
+				ScheduleTime:        "",
+				State:               "ENABLED",
+				Status:              nil,
+				TimeZone:            "",
+				UserUpdateTime:      "",
+				ServerResponse:      googleapi.ServerResponse{},
+				ForceSendFields:     nil,
+				NullFields:          nil,
+			},
+			expectedResult: &v1.ScheduledJobResponse{
+				Name:        "job1",
+				State:       "ENABLED",
+				Schedule:    "*/10 * * * *",
+				Description: "desc1",
+				Method:      "POST",
+				Target:      "test.com/scheduler",
+			},
+			expectedError: nil,
+			expectedCode:  codes.OK,
+		},
+	}
+	for i, candidate := range candidates {
+		s.schedulerMock.On("RunScheduledJob", ctx, candidate.in.Name).
+			Return(candidate.mockReturn, candidate.expectedError)
+		job, err := s.ts.RunScheduledJob(ctx, candidate.in)
+		s.schedulerMock.AssertCalled(s.T(), "RunScheduledJob", ctx, candidate.in.Name)
+		s.Equalf(candidate.expectedResult, job, "candidate %d", i+1)
 		s.Equalf(candidate.expectedCode, status.Code(err), "candidate %:", i+1)
 	}
 }

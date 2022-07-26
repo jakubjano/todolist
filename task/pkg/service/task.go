@@ -14,14 +14,21 @@ import (
 
 type TaskService struct {
 	v1.UnimplementedTaskServiceServer
-	taskRepo repository.FSTaskInterface
-	logger   *zap.Logger
+	taskRepo  repository.FSTaskInterface
+	logger    *zap.Logger
+	reminder  Reminder
+	scheduler Scheduler
 }
 
-func NewTaskService(taskRepo repository.FSTaskInterface, logger *zap.Logger) *TaskService {
+func NewTaskService(taskRepo repository.FSTaskInterface,
+	logger *zap.Logger,
+	reminder Reminder,
+	scheduler Scheduler) *TaskService {
 	return &TaskService{
-		taskRepo: taskRepo,
-		logger:   logger,
+		taskRepo:  taskRepo,
+		logger:    logger,
+		reminder:  reminder,
+		scheduler: scheduler,
 	}
 }
 
@@ -116,4 +123,124 @@ func (ts *TaskService) GetExpired(ctx context.Context, in *v1.GetExpiredRequest)
 	}
 	fmt.Println(repository.SliceToApi(tasks))
 	return repository.SliceToApi(tasks), nil
+}
+
+func (ts *TaskService) PostReminder(ctx context.Context, in *v1.PostReminderRequest) (*emptypb.Empty, error) {
+	err := ts.reminder.RemindUserViaEmail(ctx)
+	if err != nil {
+		ts.logger.Error(err.Error())
+		return &emptypb.Empty{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	return &emptypb.Empty{}, nil
+}
+
+// TODO: map response from cloudscheduler api to the type that is returned on the endpoints
+
+func (ts *TaskService) CreateScheduledJob(ctx context.Context, in *v1.CreateScheduledJobRequest) (*v1.ScheduledJobResponse, error) {
+	job, err := ts.scheduler.CreateScheduledJob(ctx, in.Name, in.Schedule, in.Target, in.Method, in.Description)
+	if err != nil {
+		ts.logger.Error(err.Error())
+		return &v1.ScheduledJobResponse{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	return &v1.ScheduledJobResponse{
+		Name:        job.Name,
+		State:       job.State,
+		Schedule:    job.Schedule,
+		Description: job.Description,
+		Method:      job.HttpTarget.HttpMethod,
+		Target:      job.HttpTarget.Uri,
+	}, nil
+}
+
+func (ts *TaskService) UpdateScheduledJob(ctx context.Context, in *v1.UpdateScheduledJobRequest) (*v1.ScheduledJobResponse, error) {
+	job, err := ts.scheduler.PatchScheduledJob(ctx, in.Name, in.Schedule, in.Description)
+	if err != nil {
+		return &v1.ScheduledJobResponse{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	return &v1.ScheduledJobResponse{
+		Name:        job.Name,
+		State:       job.State,
+		Schedule:    job.Schedule,
+		Description: job.Description,
+		Method:      job.HttpTarget.HttpMethod,
+		Target:      job.HttpTarget.Uri,
+	}, nil
+}
+
+func (ts *TaskService) PauseScheduledJob(ctx context.Context, in *v1.ScheduledJobOperationRequest) (*v1.ScheduledJobResponse, error) {
+	job, err := ts.scheduler.PauseScheduledJob(ctx, in.Name)
+	if err != nil {
+		ts.logger.Error(err.Error())
+		return &v1.ScheduledJobResponse{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	return &v1.ScheduledJobResponse{
+		Name:        job.Name,
+		State:       job.State,
+		Schedule:    job.Schedule,
+		Description: job.Description,
+		Method:      job.HttpTarget.HttpMethod,
+		Target:      job.HttpTarget.Uri,
+	}, nil
+}
+
+func (ts *TaskService) ResumeScheduledJob(ctx context.Context, in *v1.ScheduledJobOperationRequest) (*v1.ScheduledJobResponse, error) {
+	job, err := ts.scheduler.ResumeScheduledJob(ctx, in.Name)
+	if err != nil {
+		ts.logger.Error(err.Error())
+		return &v1.ScheduledJobResponse{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	return &v1.ScheduledJobResponse{
+		Name:        job.Name,
+		State:       job.State,
+		Schedule:    job.Schedule,
+		Description: job.Description,
+		Method:      job.HttpTarget.HttpMethod,
+		Target:      job.HttpTarget.Uri,
+	}, nil
+}
+
+func (ts *TaskService) DeleteScheduledJob(ctx context.Context, in *v1.ScheduledJobOperationRequest) (*emptypb.Empty, error) {
+	err := ts.scheduler.DeleteScheduledJob(ctx, in.Name)
+	if err != nil {
+		ts.logger.Error(err.Error())
+		return &emptypb.Empty{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (ts *TaskService) ListScheduledJobs(ctx context.Context, in *v1.ListScheduledJobsRequest) (*v1.JobList, error) {
+	jobs, err := ts.scheduler.ListScheduledJobs(ctx)
+	if err != nil {
+		ts.logger.Error(err.Error())
+		return &v1.JobList{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	apiJobs := make([]*v1.ScheduledJobResponse, 0, len(jobs))
+	for _, job := range jobs {
+		gcloudJob := &v1.ScheduledJobResponse{
+			Name:        job.Name,
+			State:       job.State,
+			Schedule:    job.Schedule,
+			Description: job.Description,
+			Method:      job.HttpTarget.HttpMethod,
+			Target:      job.HttpTarget.Uri,
+		}
+		apiJobs = append(apiJobs, gcloudJob)
+	}
+	return &v1.JobList{Jobs: apiJobs}, nil
+}
+
+func (ts *TaskService) RunScheduledJob(ctx context.Context, in *v1.ScheduledJobOperationRequest) (*v1.ScheduledJobResponse, error) {
+	job, err := ts.scheduler.RunScheduledJob(ctx, in.Name)
+	if err != nil {
+		ts.logger.Error(err.Error())
+		return &v1.ScheduledJobResponse{}, status.Error(http.StatusBadRequest, err.Error())
+	}
+	return &v1.ScheduledJobResponse{
+		Name:        job.Name,
+		State:       job.State,
+		Schedule:    job.Schedule,
+		Description: job.Description,
+		Method:      job.HttpTarget.HttpMethod,
+		Target:      job.HttpTarget.Uri,
+	}, nil
 }

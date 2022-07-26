@@ -12,8 +12,8 @@ import (
 	"github.com/jakubjano/todolist/task/internal/auth"
 	"github.com/jakubjano/todolist/task/pkg/service"
 	"github.com/jakubjano/todolist/task/pkg/service/repository"
-	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
+	cloudscheduler "google.golang.org/api/cloudscheduler/v1beta1"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -30,6 +30,7 @@ func main() {
 	viper.SetDefault("host", "smtp.mailtrap.io")
 	viper.SetDefault("from", "jakubjanek8@gmail.com")
 	viper.SetDefault("email.credentials", "projects/todolist-356712/secrets/email-credentials/versions/latest")
+	viper.SetDefault("scheduler.path", "projects/todolist-356712/locations/europe-west3")
 
 	ctx := context.Background()
 	logger, err := service.NewLogger()
@@ -66,10 +67,32 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	schedulerService, err := cloudscheduler.NewService(ctx)
+	if err != nil {
+		panic(err)
+	}
+	scheduler := service.NewSchedulerService(schedulerService, viper.GetString("scheduler.path"))
 
 	taskRepo := repository.NewFSTask(client.Collection(repository.CollectionUsers), client)
-	taskService := service.NewTaskService(taskRepo, logger)
-	tokenClient := auth.NewTokenClient(authClient)
+	credJsonData, err := secretManager.AccessSecret(
+		viper.GetString("email.credentials"))
+	if err != nil {
+		panic(err)
+	}
+	emailCredentials, err := secretManager.MapSecretData(credJsonData)
+	if err != nil {
+		panic(err)
+	}
+	settings := &service.Settings{
+		Host:     viper.GetString("host"),
+		From:     viper.GetString("from"),
+		UserName: emailCredentials.Username,
+		Password: emailCredentials.Password,
+	}
+	emailSender := service.NewEmailSender(settings)
+	reminder := service.NewReminder(taskRepo, logger, emailSender, client)
+	taskService := service.NewTaskService(taskRepo, logger, reminder, scheduler)
+	tokenClient := auth.NewTokenClient(authClient, logger)
 
 	grpcPort := viper.GetString("grpc.port")
 	lis, err := net.Listen("tcp", grpcPort)
@@ -110,34 +133,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	// cron reminders
-	credJsonData, err := secretManager.AccessSecret(
-		viper.GetString("email.credentials"))
-	if err != nil {
-		panic(err)
-	}
-	emailCredentials, err := secretManager.MapSecretData(credJsonData)
-	if err != nil {
-		panic(err)
-	}
-	settings := &service.Settings{
-		Host:     viper.GetString("host"),
-		From:     viper.GetString("from"),
-		UserName: emailCredentials.Username,
-		Password: emailCredentials.Password,
-	}
-	emailSender := service.NewEmailSender(settings)
-	reminder := service.NewReminder(taskRepo, logger, emailSender, client)
-	c := cron.New()
-	c.AddFunc("@every 2h", func() {
-		err := reminder.RemindUserViaEmail(ctx)
-		if err != nil {
-			panic(err)
-		}
-	},
-	)
-	c.Start()
 
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
 	fmt.Printf("starting http server at '%s'\n", viper.GetString("gateway.port"))
